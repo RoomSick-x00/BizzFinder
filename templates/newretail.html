@@ -1,0 +1,109 @@
+.jpeg"{%load static%}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retail Store Ratings & Reviews - BIZZFINDER</title>
+  <!-- Link to the external common CSS file -->
+  <link rel="stylesheet" href ="{% static 'common.css' %}">
+  <!-- Page-Specific Styles for Retail Store Page -->
+  <style>
+    /* Grid Layout for Retail Store Cards */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .card h2 {
+      margin: 10px 0 5px;
+      color: #333;
+      font-size: 20px;
+    }
+    .rating {
+      color: gold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .card p {
+      font-size: 16px;
+      color: #666;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed Header (styled in common.css) -->
+  <header>
+    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
+    <nav>
+      <ul>
+        <li><a href="{% url 'index' %}">Home</a></li>
+        <li><a href="{% url 'categoriesnew' %}">Categories</a></li>
+        <li><a href="{% url 'contactus' %}">Contact Us</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+    <div class="container">
+      <h1>Retail Store Ratings & Reviews</h1>
+      <div class="grid">
+        <!-- Retail Store Card 1 -->
+        <div class="card">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipM3d7AyLrTqX1EWWg72Yqi9rs2oKhS4889TjDGa=s1360-w1360-h1020" alt="My JIO Store">
+          <h2>My JIO Store</h2>
+          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9734; (4.7)</div>
+          <p>"All at one Place"</p>
+        </div>
+        <!-- Retail Store Card 2 -->
+        <div class="card">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipPx6e-BCHfzwmSot239w4_LRGOpIQnA9E3Kp-7h=s1360-w1360-h1020" alt="Smart POINT">
+          <h2>Smart POINT</h2>
+          <div class="rating">&#9733; &#9733; &#9733; &#9733; (4.0)</div>
+          <p>"All at affordable prices!"</p>
+        </div>
+        <!-- Retail Store Card 3 -->
+        <div class="card">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipN7fmecXi6WO0t15cBme_zKALxMhupnbqWMlxoV=s1360-w1360-h1020" alt="Marina Shopping Mall">
+          <h2>Marina Shopping Mall</h2>
+          <div class="rating">&#9733; &#9733; &#9733; (3.0)</div>
+          <p>"Good atmosphere, but a bit crowded."</p>
+        </div>
+        <!-- Retail Store Card 4 -->
+        <div class="card">
+          <img src="https://lh3.googleusercontent.com/p/AF1QipNtyWp9VGMmCR-CtXfKAFSBWfcM_S0OczLJfJwi=s1360-w1360-h1020" alt="Sanjeev General Store">
+          <h2>Sanjeev General Store</h2>
+          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9733; (5.0)</div>
+          <p>"One Stop Store."</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer (styled in common.css) -->
+  <footer>
+    <p>&copy; 2025 BIZZFINDERZ. All rights reserved.</p>
+  </footer>
+</body>
+</html>

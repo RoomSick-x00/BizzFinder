@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Application - BIZZFINDER</title>
+  <!-- Link to the external common CSS file for shared header, footer, etc. -->
+  <link rel="stylesheet" href="common.css">
+  <!-- Page-Specific Styles for Chat Application -->
+  <style>
+    /* Chat Container Styles */
+    .chat-container {
+      width: 120%;
+      max-width: 1170px;
+      height: 90vh;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      margin: 40px auto; /* Ensure spacing from header */
+    }
+
+    .chat-header {
+      background: teal;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    background-color: #006666;
+    background: linear-gradient(to bottom, #006666, #c2c681);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 12px;
+      margin: 8px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .message.left {
+      background: lightgray;
+      align-self: flex-start;
+    }
+
+    .message.right {
+      background: #a855f7;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .chat-input {
+      display: flex;
+      padding: 15px;
+      border-top: 1px solid #ccc;
+      background: #f3f3f3;
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .chat-input button {
+      padding: 12px 20px;
+      margin-left: 10px;
+      font-size: 16px;
+      border: none;
+      background: purple;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .chat-input button:hover {
+      background: darkviolet;
+    }
+  </style>
+</head>
+<body>
+  <!-- Common Header (styles provided in common.css) -->
+  <header>
+    <div class="logo">BIZZ<span class="highlight">FINDER</span></div>
+    <nav>
+      <ul>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="logout.php">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+    <div class="chat-container">
+      <div class="chat-header">
+        Chat Application
+      </div>
+      <div class="chat-box" id="chat-box">
+        <div class="message left">User: Hey, how are you?</div>
+        <div class="message right">Retailer: I am fine. How about you?</div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="message-input" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Common Footer (styles provided in common.css) -->
+  <footer>
+    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function sendMessage() {
+      let messageInput = document.getElementById("message-input");
+      let messageText = messageInput.value.trim();
+      if (messageText === "") return;
+      let chatBox = document.getElementById("chat-box");
+      let newMessage = document.createElement("div");
+      newMessage.classList.add("message", "right");
+      newMessage.innerText = "You: " + messageText;
+      chatBox.appendChild(newMessage);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      messageInput.value = "";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+{%load static%}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Ratings & Reviews - BIZZFINDERZ</title>
+  <!-- Link to your common styles -->
+  <link rel="stylesheet" href = "{% static 'common.css' %}">
+  <!-- Page-Specific Styles for Gym Page -->
+  <style>
+    /* Grid Layout for Gym Cards */
+    .gym-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 0 20px;
+    }
+    .gym-card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .gym-card:hover {
+      transform: scale(1.02);
+    }
+    .gym-card img {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+    .gym-card h2 {
+      margin: 10px 0 5px;
+      color: #333;
+    }
+    .rating {
+      color: gold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .reviews {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed Header (styles defined in common.css) -->
+  <header>
+    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
+    <nav>
+      <ul>
+        <li><a href = "{% url 'dashboard' %}">Home</a></li>
+        <li><a href = "{% url 'categoriesnew' %}">Categories</a></li>
+        <li><a href = "{% url 'contactus' %}">Contact Us</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+    <div class="container">
+      <h1>Gym Ratings & Reviews</h1>
+      <div class="gym-grid">
+        <!-- Gym Card 1 -->
+        <div class="gym-card">
+          <img src="{% static 'pictures/fit connect.jpg' %}" alt="Fit Connect Gym">
+          <h2>Fit Connect Gym</h2>
+          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9734; (4.7)</div>
+          <p class="reviews">"Great equipment and trainers!"</p>
+        </div>
+        {% comment %} <!-- Gym Card 2 -->
+        <div class="gym-card">
+          <img src="pictures/infinity.jpg" alt="Infinity Gym">
+          <h2>Infinity Gym</h2>
+          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9733; (5.0)</div>
+          <p class="reviews">"Best gym for serious lifters!"</p>
+        </div>
+        <!-- Gym Card 3 -->
+        <div class="gym-card">
+          <img src="pictures/gym befit.jpg" alt="Gym BEFIT Fitness Club">
+          <h2>Gym BEFIT Fitness Club</h2>
+          <div class="rating">&#9733; &#9733; &#9733; &#9734; &#9734; (3.0)</div>
+          <p class="reviews">"Good atmosphere, but a bit crowded."</p>
+        </div> {% endcomment %}
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer (styles defined in common.css) -->
+  <footer>
+    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
+  </footer>
+</body>
+</html>

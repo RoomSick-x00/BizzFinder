@@ -1,0 +1,195 @@
+/* styles.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.upper-section {
+    background: url('https://tse3.mm.bing.net/th?id=OIG1.zeCOIfvncpy.pbTc8PE8&pid=ImgGn') no-repeat center center/cover;
+    height: 60vh;
+    color: white;
+    position: relative;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: rgba(0, 128, 128, 0.9);
+}
+
+.navbar .logo {
+    font-size: 24px;
+    font-weight: bold;
+    display: inline-block;
+    animation: bounceLogo 3s infinite;
+}
+
+.navbar .bizz {
+    color: white;
+}
+
+.navbar .highlight {
+    color: #ffcc00;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #ffcc00;
+    font-size: 18px;
+    border: 2px solid transparent;
+    padding: 5px 10px;
+    transition: color 0.3s ease, border 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #e6f8f8;
+    border: 2px solid #e6f8f8;
+}
+
+.search-bar {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+    display: flex;
+    gap: 10px;
+    animation: fadeIn 2s ease-in;
+}
+
+.search-bar input {
+    padding: 10px;
+    font-size: 16px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.search-bar button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #ffcc00;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.search-bar button:hover {
+    background-color: #e6f8f8;
+    transform: scale(1.1);
+}
+
+.lower-section {
+    background-color: #e6f8f8;
+    padding: 20px;
+    text-align: center;
+}
+
+.lower-section h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: teal;
+}
+
+.category-scroll {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.category {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.category-name {
+    font-size: 16px;
+    color: teal;
+    font-weight: bold;
+    text-align: center;
+}
+
+.category img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid teal;
+    transition: transform 0.3s ease;
+}
+
+.category img:hover {
+    transform: scale(1.1);
+}
+
+.about-us {
+    background-color: #004d4d;
+    color: #ffcc00;
+    padding: 20px;
+    text-align: center;
+}
+
+.testimonials-section {
+    background-color: #f0f8f8;
+    padding: 40px;
+    text-align: center;
+}
+
+.testimonials-section h2 {
+    color: teal;
+    margin-bottom: 30px;
+}
+
+.testimonial {
+    background-color: white;
+    border: 2px solid #ffcc00;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 400px;
+    text-align: left;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.testimonial img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid teal;
+    margin-bottom: 10px;
+}
+
+.reviewer-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Updated CSS for category scroll (styles.css) */
+
+.category-item {
+    background: #e6e6e6;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.category-item:hover {
+    transform: scale(1.05);
+    background: #cccccc;
+}

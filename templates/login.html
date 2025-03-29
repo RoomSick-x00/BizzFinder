@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - BIZZFINDER</title>
+  <link rel="stylesheet" href="{% static 'common.css' %}"> 
+  <style>
+    .auth-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .auth-container h2 {
+      margin-bottom: 20px;
+      color: #004d4d;
+    }
+    .auth-container form {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    .auth-container label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    .auth-container input {
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .auth-container button {
+      background-color: #004d4d;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .auth-container button:hover {
+      background-color: #006666;
+      color: #ffd700;
+      transform: scale(1.05);
+    }
+    .auth-container .toggle-link {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .auth-container .toggle-link a {
+      color: #004d4d;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .auth-container .toggle-link a:hover {
+      text-decoration: underline;
+    }
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
+    <nav>
+      <ul>
+        <li><a href="{% url 'dashboard' %}">Home</a></li>
+        <li><a href="{% url 'categoriesnew' %}">Categories</a></li>  
+        <li><a href="{% url 'contactus' %}">Contact Us</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container">
+      <div class="auth-container">
+        <h2>Login</h2>
+        
+        {% if form.errors %}
+          <div class="error-message">
+            Invalid login credentials. Please try again.
+          </div>
+        {% endif %}
+        
+        <form action="{% url 'login' %}" method="post">  
+          {% csrf_token %}
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+          <button type="submit">Login</button>
+        </form>
+        <div class="toggle-link">
+          Don't have an account? <a href="{% url 'signup' %}">Signup</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
+  </footer>
+</body>
+</html>

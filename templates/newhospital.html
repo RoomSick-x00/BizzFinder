@@ -1,0 +1,101 @@
+{%load static%}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Ratings & Reviews - BIZZFINDER</title>
+  <!-- Link to your common CSS file -->
+  <link rel="stylesheet" href = "{% static 'common.css' %}">
+  <!-- Page-Specific Styles for Hospital Page -->
+  <style>
+    /* Grid Layout for Hospital Cards */
+    .hospital-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 0 20px;
+    }
+    .hospital-card {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+    }
+    .hospital-card:hover {
+      transform: scale(1.02);
+    }
+    .hospital-card img {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+    .hospital-card h2 {
+      margin: 10px 0 5px;
+      color: #333;
+    }
+    .rating {
+      color: gold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .reviews {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed Header (styled via common.css) -->
+  <header>
+    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
+    <nav>
+      <ul>
+        <li><a href = "{% url 'dashboard' %}">Home</a></li>
+        <li><a href = "{% url 'categoriesnew' %}">Categories</a></li>
+        <li><a href = "{% url 'contactus' %}">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+    <div class="container">
+      <h1>Hospital Ratings & Reviews</h1>
+      <div class="hospital-grid">
+        <!-- Hospital Card 1 -->
+        <div class="hospital-card">
+          <img src="{% static 'pictures/city hospital.jpg' %}" alt="City Hospital">
+          <h2>City Hospital</h2>
+          <div class="rating">★★★★★</div>
+          <p class="reviews">"Excellent staff and facilities!"</p>
+        </div>
+        {% comment %} <!-- Hospital Card 2 -->
+        <div class="hospital-card">
+          <img src="pictures/sai hospital.jpg" alt="Sai Hospital and IVF Centre">
+          <h2>Sai Hospital and IVF Centre</h2>
+          <div class="rating">★★★★</div>
+          <p class="reviews">"The best hospital experience ever!"</p>
+        </div>
+        <!-- Hospital Card 3 -->
+        <div class="hospital-card">
+          <img src="pictures/bhandari hospital.jpg" alt="Bhandari Hospital">
+          <h2>Bhandari Hospital</h2>
+          <div class="rating">★★★★</div>
+          <p class="reviews">"Average service, but clean facilities."</p>
+        </div> {% endcomment %}
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer (styled via common.css) -->
+  <footer>
+    <p>&copy; 2025 BIZZFINDERZ. All rights reserved.</p>
+  </footer>
+</body>
+</html>
