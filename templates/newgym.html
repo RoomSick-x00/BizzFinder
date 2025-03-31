@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gym Ratings & Reviews - BIZZFINDERZ</title>
   <!-- Link to your common styles -->
-  <link rel="stylesheet" href = "{% static 'common.css' %}">
+  <link rel="stylesheet" href="{% static 'common.css' %}">
   <!-- Page-Specific Styles for Gym Page -->
   <style>
     /* Grid Layout for Gym Cards */
@@ -48,17 +48,79 @@
       color: #666;
       margin: 0;
     }
+    .gym-details {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+    .review-form {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .login-prompt {
+      text-align: center;
+      margin-top: 15px;
+      color: #666;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 2rem 0;
+      padding: 1rem;
+    }
+    .pagination-link {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--primary-color);
+      border-radius: 4px;
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .pagination-link:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .pagination-current {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 4px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <!-- Fixed Header (styles defined in common.css) -->
   <header>
-    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
+    <div class="logo">
+      Bizz<span class="highlight">Finderz</span>
+    </div>
     <nav>
-      <ul>
-        <li><a href = "{% url 'dashboard' %}">Home</a></li>
-        <li><a href = "{% url 'categoriesnew' %}">Categories</a></li>
-        <li><a href = "{% url 'contactus' %}">Contact Us</a></li>
+      <ul class="nav">
+        <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
+        <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+        {% if user.is_authenticated %}
+          <li class="profile-dropdown">
+            <a href="#" class="profile-trigger">
+              {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="nav-profile-pic">
+              {% endif %}
+              {{ user.username }}
+            </a>
+            <div class="dropdown-content">
+              <a href="{% url 'profile' %}">Profile</a>
+              <a href="{% url 'edit_profile' %}">Edit Profile</a>
+              <hr class="divider">
+              <a href="{% url 'logout' %}">Logout</a>
+            </div>
+          </li>
+        {% else %}
+          <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+        {% endif %}
+        <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
       </ul>
     </nav>
   </header>
@@ -68,34 +130,77 @@
     <div class="container">
       <h1>Gym Ratings & Reviews</h1>
       <div class="gym-grid">
-        <!-- Gym Card 1 -->
+        {% for gym in gyms %}
         <div class="gym-card">
-          <img src="{% static 'pictures/fit connect.jpg' %}" alt="Fit Connect Gym">
-          <h2>Fit Connect Gym</h2>
-          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9734; (4.7)</div>
-          <p class="reviews">"Great equipment and trainers!"</p>
+          <img src="{{ gym.image.url }}" alt="{{ gym.name }}">
+          <h2>{{ gym.name }}</h2>
+          <div class="rating">
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= gym.rating %}★{% else %}☆{% endif %}
+            {% endfor %}
+            ({{ gym.rating }})
+          </div>
+          <p class="reviews">"{{ gym.review }}"</p>
+          <div class="gym-details">
+            <p><strong>Membership Price:</strong> ₹{{ gym.membership_price }}</p>
+            <p><strong>Operating Hours:</strong> {{ gym.operating_hours }}</p>
+            <p><strong>Trainer Available:</strong> {% if gym.trainer_available %}Yes{% else %}No{% endif %}</p>
+            <p><strong>Address:</strong> {{ gym.address }}</p>
+            <p><strong>Equipment Available:</strong> {{ gym.equipment_available }}</p>
+          </div>
+          {% if user.is_authenticated %}
+          <form action="{% url 'add_review' %}" method="post" class="review-form">
+            {% csrf_token %}
+            <input type="hidden" name="business_type" value="gym">
+            <input type="hidden" name="business_id" value="{{ gym.id }}">
+            <input type="hidden" name="next" value="{% url 'newgym' %}">
+            <div class="rating-input">
+              <label>Your Rating:</label>
+              <select name="rating" required>
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+              </select>
+            </div>
+            <textarea name="comment" placeholder="Write your review..." required></textarea>
+            <button type="submit">Submit Review</button>
+          </form>
+          {% else %}
+          <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
+          {% endif %}
         </div>
-        {% comment %} <!-- Gym Card 2 -->
-        <div class="gym-card">
-          <img src="pictures/infinity.jpg" alt="Infinity Gym">
-          <h2>Infinity Gym</h2>
-          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9733; (5.0)</div>
-          <p class="reviews">"Best gym for serious lifters!"</p>
-        </div>
-        <!-- Gym Card 3 -->
-        <div class="gym-card">
-          <img src="pictures/gym befit.jpg" alt="Gym BEFIT Fitness Club">
-          <h2>Gym BEFIT Fitness Club</h2>
-          <div class="rating">&#9733; &#9733; &#9733; &#9734; &#9734; (3.0)</div>
-          <p class="reviews">"Good atmosphere, but a bit crowded."</p>
-        </div> {% endcomment %}
+        {% empty %}
+        <p class="no-gyms">No gyms available at the moment.</p>
+        {% endfor %}
       </div>
     </div>
   </main>
 
+  {% if gyms.has_other_pages %}
+  <div class="pagination">
+    {% if gyms.has_previous %}
+      <a href="?page={{ gyms.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
+    {% endif %}
+    
+    {% for num in gyms.paginator.page_range %}
+      {% if gyms.number == num %}
+        <span class="pagination-current">{{ num }}</span>
+      {% else %}
+        <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    
+    {% if gyms.has_next %}
+      <a href="?page={{ gyms.next_page_number }}" class="pagination-link">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
   <!-- Footer (styles defined in common.css) -->
   <footer>
-    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
+    <p>&copy; 2025 BIZZFINDERZ. All rights reserved.</p>
   </footer>
 </body>
 </html>

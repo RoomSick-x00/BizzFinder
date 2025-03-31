@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hospital Ratings & Reviews - BIZZFINDER</title>
   <!-- Link to your common CSS file -->
-  <link rel="stylesheet" href = "{% static 'common.css' %}">
+  <link rel="stylesheet" href="{% static 'common.css' %}">
   <!-- Page-Specific Styles for Hospital Page -->
   <style>
     /* Grid Layout for Hospital Cards */
@@ -48,17 +48,79 @@
       color: #666;
       margin: 0;
     }
+    .hospital-details {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+    .review-form {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .login-prompt {
+      text-align: center;
+      margin-top: 15px;
+      color: #666;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 2rem 0;
+      padding: 1rem;
+    }
+    .pagination-link {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--primary-color);
+      border-radius: 4px;
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .pagination-link:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .pagination-current {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 4px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <!-- Fixed Header (styled via common.css) -->
-  <header>
-    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
+  <header class="d-flex justify-content-between align-items-center px-4">
+    <div class="logo">
+      Bizz<span class="highlight">Finderz</span>
+    </div>
     <nav>
-      <ul>
-        <li><a href = "{% url 'dashboard' %}">Home</a></li>
-        <li><a href = "{% url 'categoriesnew' %}">Categories</a></li>
-        <li><a href = "{% url 'contactus' %}">Contact</a></li>
+      <ul class="nav">
+        <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
+        <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+        {% if user.is_authenticated %}
+          <li class="profile-dropdown">
+            <a href="#" class="profile-trigger">
+              {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="nav-profile-pic">
+              {% endif %}
+              {{ user.username }}
+            </a>
+            <div class="dropdown-content">
+              <a href="{% url 'profile' %}">Profile</a>
+              <a href="{% url 'edit_profile' %}">Edit Profile</a>
+              <hr class="divider">
+              <a href="{% url 'logout' %}">Logout</a>
+            </div>
+          </li>
+        {% else %}
+          <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+        {% endif %}
+        <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
       </ul>
     </nav>
   </header>
@@ -68,30 +130,73 @@
     <div class="container">
       <h1>Hospital Ratings & Reviews</h1>
       <div class="hospital-grid">
-        <!-- Hospital Card 1 -->
+        {% for hospital in hospitals %}
         <div class="hospital-card">
-          <img src="{% static 'pictures/city hospital.jpg' %}" alt="City Hospital">
-          <h2>City Hospital</h2>
-          <div class="rating">★★★★★</div>
-          <p class="reviews">"Excellent staff and facilities!"</p>
+          <img src="{{ hospital.image.url }}" alt="{{ hospital.name }}">
+          <h2>{{ hospital.name }}</h2>
+          <div class="rating">
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= hospital.rating %}★{% else %}☆{% endif %}
+            {% endfor %}
+            ({{ hospital.rating }})
+          </div>
+          <p class="reviews">"{{ hospital.review }}"</p>
+          <div class="hospital-details">
+            <p><strong>Specialties:</strong> {{ hospital.specialties }}</p>
+            <p><strong>Emergency Services:</strong> {% if hospital.emergency_services %}Available{% else %}Not Available{% endif %}</p>
+            <p><strong>Doctor Available:</strong> {% if hospital.doctor_available %}Yes{% else %}No{% endif %}</p>
+            <p><strong>Insurance Accepted:</strong> {{ hospital.insurance_accepted }}</p>
+            <p><strong>Address:</strong> {{ hospital.address }}</p>
+          </div>
+          {% if user.is_authenticated %}
+          <form action="{% url 'add_review' %}" method="post" class="review-form">
+            {% csrf_token %}
+            <input type="hidden" name="business_type" value="hospital">
+            <input type="hidden" name="business_id" value="{{ hospital.id }}">
+            <input type="hidden" name="next" value="{% url 'newhospital' %}">
+            <div class="rating-input">
+              <label>Your Rating:</label>
+              <select name="rating" required>
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+              </select>
+            </div>
+            <textarea name="comment" placeholder="Write your review..." required></textarea>
+            <button type="submit">Submit Review</button>
+          </form>
+          {% else %}
+          <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
+          {% endif %}
         </div>
-        {% comment %} <!-- Hospital Card 2 -->
-        <div class="hospital-card">
-          <img src="pictures/sai hospital.jpg" alt="Sai Hospital and IVF Centre">
-          <h2>Sai Hospital and IVF Centre</h2>
-          <div class="rating">★★★★</div>
-          <p class="reviews">"The best hospital experience ever!"</p>
-        </div>
-        <!-- Hospital Card 3 -->
-        <div class="hospital-card">
-          <img src="pictures/bhandari hospital.jpg" alt="Bhandari Hospital">
-          <h2>Bhandari Hospital</h2>
-          <div class="rating">★★★★</div>
-          <p class="reviews">"Average service, but clean facilities."</p>
-        </div> {% endcomment %}
+        {% empty %}
+        <p class="no-hospitals">No hospitals available at the moment.</p>
+        {% endfor %}
       </div>
     </div>
   </main>
+
+  {% if hospitals.has_other_pages %}
+  <div class="pagination">
+    {% if hospitals.has_previous %}
+      <a href="?page={{ hospitals.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
+    {% endif %}
+    
+    {% for num in hospitals.paginator.page_range %}
+      {% if hospitals.number == num %}
+        <span class="pagination-current">{{ num }}</span>
+      {% else %}
+        <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    
+    {% if hospitals.has_next %}
+      <a href="?page={{ hospitals.next_page_number }}" class="pagination-link">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <!-- Footer (styled via common.css) -->
   <footer>

@@ -1,4 +1,4 @@
-.jpeg"{%load static%}
+{%load static%}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,17 +49,79 @@
       color: #666;
       margin: 0;
     }
+    .store-details {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+    .review-form {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .login-prompt {
+      text-align: center;
+      margin-top: 15px;
+      color: #666;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 2rem 0;
+      padding: 1rem;
+    }
+    .pagination-link {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--primary-color);
+      border-radius: 4px;
+      color: var(--primary-color);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .pagination-link:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    .pagination-current {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 4px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <!-- Fixed Header (styled in common.css) -->
-  <header>
-    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
+  <header class="d-flex justify-content-between align-items-center px-4">
+    <div class="logo">
+      Bizz<span class="highlight">Finderz</span>
+    </div>
     <nav>
-      <ul>
-        <li><a href="{% url 'index' %}">Home</a></li>
-        <li><a href="{% url 'categoriesnew' %}">Categories</a></li>
-        <li><a href="{% url 'contactus' %}">Contact Us</a></li>
+      <ul class="nav">
+        <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
+        <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+        {% if user.is_authenticated %}
+          <li class="profile-dropdown">
+            <a href="#" class="profile-trigger">
+              {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="nav-profile-pic">
+              {% endif %}
+              {{ user.username }}
+            </a>
+            <div class="dropdown-content">
+              <a href="{% url 'profile' %}">Profile</a>
+              <a href="{% url 'edit_profile' %}">Edit Profile</a>
+              <hr class="divider">
+              <a href="{% url 'logout' %}">Logout</a>
+            </div>
+          </li>
+        {% else %}
+          <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+        {% endif %}
+        <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
       </ul>
     </nav>
   </header>
@@ -69,37 +131,73 @@
     <div class="container">
       <h1>Retail Store Ratings & Reviews</h1>
       <div class="grid">
-        <!-- Retail Store Card 1 -->
+        {% for store in stores %}
         <div class="card">
-          <img src="https://lh3.googleusercontent.com/p/AF1QipM3d7AyLrTqX1EWWg72Yqi9rs2oKhS4889TjDGa=s1360-w1360-h1020" alt="My JIO Store">
-          <h2>My JIO Store</h2>
-          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9734; (4.7)</div>
-          <p>"All at one Place"</p>
+          <img src="{{ store.image.url }}" alt="{{ store.name }}">
+          <h2>{{ store.name }}</h2>
+          <div class="rating">
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= store.rating %}★{% else %}☆{% endif %}
+            {% endfor %}
+            ({{ store.rating }})
+          </div>
+          <p class="reviews">"{{ store.review }}"</p>
+          <div class="store-details">
+            <p><strong>Store Type:</strong> {{ store.store_type }}</p>
+            <p><strong>Operating Hours:</strong> {{ store.operating_hours }}</p>
+            <p><strong>Payment Methods:</strong> {{ store.payment_methods }}</p>
+            <p><strong>Address:</strong> {{ store.address }}</p>
+            <p><strong>Special Offers:</strong> {{ store.special_offers }}</p>
+          </div>
+          {% if user.is_authenticated %}
+          <form action="{% url 'add_review' %}" method="post" class="review-form">
+            {% csrf_token %}
+            <input type="hidden" name="business_type" value="retail">
+            <input type="hidden" name="business_id" value="{{ store.id }}">
+            <input type="hidden" name="next" value="{% url 'newretail' %}">
+            <div class="rating-input">
+              <label>Your Rating:</label>
+              <select name="rating" required>
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+              </select>
+            </div>
+            <textarea name="comment" placeholder="Write your review..." required></textarea>
+            <button type="submit">Submit Review</button>
+          </form>
+          {% else %}
+          <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
+          {% endif %}
         </div>
-        <!-- Retail Store Card 2 -->
-        <div class="card">
-          <img src="https://lh3.googleusercontent.com/p/AF1QipPx6e-BCHfzwmSot239w4_LRGOpIQnA9E3Kp-7h=s1360-w1360-h1020" alt="Smart POINT">
-          <h2>Smart POINT</h2>
-          <div class="rating">&#9733; &#9733; &#9733; &#9733; (4.0)</div>
-          <p>"All at affordable prices!"</p>
-        </div>
-        <!-- Retail Store Card 3 -->
-        <div class="card">
-          <img src="https://lh3.googleusercontent.com/p/AF1QipN7fmecXi6WO0t15cBme_zKALxMhupnbqWMlxoV=s1360-w1360-h1020" alt="Marina Shopping Mall">
-          <h2>Marina Shopping Mall</h2>
-          <div class="rating">&#9733; &#9733; &#9733; (3.0)</div>
-          <p>"Good atmosphere, but a bit crowded."</p>
-        </div>
-        <!-- Retail Store Card 4 -->
-        <div class="card">
-          <img src="https://lh3.googleusercontent.com/p/AF1QipNtyWp9VGMmCR-CtXfKAFSBWfcM_S0OczLJfJwi=s1360-w1360-h1020" alt="Sanjeev General Store">
-          <h2>Sanjeev General Store</h2>
-          <div class="rating">&#9733; &#9733; &#9733; &#9733; &#9733; (5.0)</div>
-          <p>"One Stop Store."</p>
-        </div>
+        {% empty %}
+        <p class="no-stores">No retail stores available at the moment.</p>
+        {% endfor %}
       </div>
     </div>
   </main>
+
+  {% if stores.has_other_pages %}
+  <div class="pagination">
+    {% if stores.has_previous %}
+      <a href="?page={{ stores.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
+    {% endif %}
+    
+    {% for num in stores.paginator.page_range %}
+      {% if stores.number == num %}
+        <span class="pagination-current">{{ num }}</span>
+      {% else %}
+        <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    
+    {% if stores.has_next %}
+      <a href="?page={{ stores.next_page_number }}" class="pagination-link">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <!-- Footer (styled in common.css) -->
   <footer>

@@ -2,17 +2,18 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.dashboard, name="dashboard"),  # User dashboard or homepage
+    path('', views.index, name="index"),  # Public homepage
+    path('search/', views.search, name="search"),  # Add search URL
     path('contactus/', views.contactus, name="contactus"),
-    path('categories/', views.categoriesnew, name="categoriesnew"),
-    path('signup/', views.signup, name="signup"),
+    path('categories/', views.categories, name="categories"),
     path('login/', views.login_view, name="login"),
-    path('logout/', views.logout_view, name="logout"), 
+    path('logout/', views.logout_view, name="logout"),
     path('hotel/', views.hotel, name="hotel"),
-    path('newrestaurant/', views.newrestaurant, name="newrestaurant"),
-    path('newretail/', views.newretail, name="newretail"),
-    path('newgym/', views.newgym, name="newgym"),
-    path('newhospital/', views.newhospital, name="newhospital"),
-    path('user/', views.user_view, name="user"),  
-    path('profile/', views.profile, name="profile"),  
+    path('gym/', views.newgym, name="gym"),
+    path('hospital/', views.newhospital, name="hospital"),
+    path('restaurant/', views.newrestaurant, name="restaurant"),
+    path('retail/', views.newretail, name="retail"),
+    path('profile/', views.profile_view, name="profile"),
+    path('edit_profile/', views.edit_profile, name="edit_profile"),
+    path('signup/', views.signup, name="signup"),
 ]

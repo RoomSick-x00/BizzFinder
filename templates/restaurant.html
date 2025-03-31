@@ -1,71 +1,81 @@
 {%load static%}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Restaurant Reviews - BIZZFINDER</title>
-  <!-- Link to your common CSS file (contains reset, header, nav, footer styles) -->
-  <link rel="stylesheet" href="{% static 'common.css' %}">
-  <!-- Page-Specific Styles for Restaurant Reviews -->
+  <title>Restaurant Ratings & Reviews - BIZZFINDER</title>
+ 
+  <link rel="stylesheet" href = "{% static 'common.css' %}">
+
   <style>
-    /* Grid Layout for Restaurant Reviews */
-    .reviews-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* Grid Layout for Restaurant Cards */
+    .grid {
+      display: grid;  
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 20px;
-      padding: 0 20px;
+      padding: 20px;
+      margin-left: 100px;
     }
-    .restaurant {
+    .card {
       background: #fff;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s;
     }
-    .restaurant:hover {
-      transform: scale(1.02);
+    .card:hover {
+      transform: scale(1.05);
     }
-    .restaurant img {
+    .card img {
       width: 100%;
       height: 200px;
       object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
+      border-radius: 10px;
     }
-    .restaurant h2 {
-      margin: 10px 0 5px;
-      color: #333;
+    .card h3 {
+      margin: 15px 0 10px;
+      color: #004d4d;
     }
     .rating {
-      color: #f39c12;
+      color: gold;
       font-size: 18px;
       margin-bottom: 10px;
     }
-    .review,
-    .Address {
-      color: #555;
-      margin: 5px 0;
+    .card p {
+      font-size: 16px;
+      color: #333;
     }
-    .restaurant-details {
+    .menu-items {
       margin-top: 15px;
       padding-top: 15px;
       border-top: 1px solid #eee;
-      width: 100%;
     }
-    .review-form {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-      width: 100%;
+    .menu-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 5px;
     }
-    .login-prompt {
-      text-align: center;
-      margin-top: 15px;
+    .menu-item-name {
+      font-weight: bold;
+      color: #004d4d;
+    }
+    .menu-item-price {
       color: #666;
+    }
+    .menu-item-tags {
+      display: flex;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .menu-item-tag {
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: #e0f0f0;
+      color: #004d4d;
     }
     .pagination {
       display: flex;
@@ -94,13 +104,50 @@
       border-radius: 4px;
       font-weight: bold;
     }
+    .review-form {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .review-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      resize: vertical;
+    }
+    .review-form button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .review-form button:hover {
+      background: var(--secondary-color);
+    }
+    .login-prompt {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+    }
+    .login-prompt a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+    .login-prompt a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <!-- Fixed Header (styles defined in common.css) -->
-  <header class="d-flex justify-content-between align-items-center px-4">
+  <!-- Fixed Header (styled in common.css) -->
+  <header>
     <div class="logo">
-      Bizz<span class="highlight">Finderz</span>
+      <a href="{% url 'index' %}">Bizz<span class="highlight">Finderz</span></a>
     </div>
     <nav>
       <ul class="nav">
@@ -108,7 +155,7 @@
         <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
         {% if user.is_authenticated %}
           <li class="profile-dropdown">
-            <a href="#" class="profile-trigger">
+            <a href="#" class="profile-trigger text-light">
               {% if user.profile_picture %}
                 <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="nav-profile-pic">
               {% endif %}
@@ -132,32 +179,54 @@
   <!-- Main Content Area -->
   <main>
     <div class="container">
-      <h1>Restaurant Reviews</h1>
-      <div class="reviews-grid">
+      <h1>Restaurant Ratings & Reviews</h1>
+      <div class="grid">
         {% for restaurant in restaurants %}
-        <div class="restaurant">
+        <div class="card">
           <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
-          <h2>{{ restaurant.name }}</h2>
+          <h3>{{ restaurant.name }}</h3>
           <div class="rating">
-            {% for i in "12345"|make_list %}
-              {% if forloop.counter <= restaurant.rating %}★{% else %}☆{% endif %}
-            {% endfor %}
+            {{ restaurant.stars_display }}
             ({{ restaurant.rating }})
           </div>
-          <p class="review">"{{ restaurant.review }}"</p>
-          <p class="Address">{{ restaurant.address }}</p>
+          <p>{{ restaurant.description }}</p>
           <div class="restaurant-details">
-            <p><strong>Cuisine Type:</strong> {{ restaurant.cuisine_type }}</p>
-            <p><strong>Price Range:</strong> {{ restaurant.price_range }}</p>
+            <p><strong>Cuisine:</strong> {{ restaurant.cuisine_type }}</p>
+            <p><strong>Price Range:</strong> {{ restaurant.get_price_range_display }}</p>
             <p><strong>Opening Hours:</strong> {{ restaurant.opening_hours }}</p>
-            <p><strong>Vegetarian Friendly:</strong> {% if restaurant.is_vegetarian_friendly %}Yes{% else %}No{% endif %}</p>
+            <p><strong>Address:</strong> {{ restaurant.address }}</p>
+            <p><strong>Phone:</strong> {{ restaurant.phone }}</p>
+            {% if restaurant.website %}
+            <p><strong>Website:</strong> <a href="{{ restaurant.website }}" target="_blank">Visit Website</a></p>
+            {% endif %}
           </div>
+
+          {% if restaurant.menu_items.all %}
+          <div class="menu-items">
+            <h4>Popular Menu Items</h4>
+            {% for item in restaurant.menu_items.all|slice:":3" %}
+            <div class="menu-item">
+              <div class="menu-item-name">{{ item.name }}</div>
+              <div class="menu-item-price">₹{{ item.price }}</div>
+              {% if item.description %}
+              <p>{{ item.description }}</p>
+              {% endif %}
+              <div class="menu-item-tags">
+                {% if item.is_vegetarian %}<span class="menu-item-tag">Vegetarian</span>{% endif %}
+                {% if item.is_vegan %}<span class="menu-item-tag">Vegan</span>{% endif %}
+                {% if item.is_gluten_free %}<span class="menu-item-tag">Gluten-Free</span>{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
           {% if user.is_authenticated %}
           <form action="{% url 'add_review' %}" method="post" class="review-form">
             {% csrf_token %}
             <input type="hidden" name="business_type" value="restaurant">
             <input type="hidden" name="business_id" value="{{ restaurant.id }}">
-            <input type="hidden" name="next" value="{% url 'newrestaurant' %}">
+            <input type="hidden" name="next" value="{% url 'restaurant' %}">
             <div class="rating-input">
               <label>Your Rating:</label>
               <select name="rating" required>
@@ -202,9 +271,9 @@
   </div>
   {% endif %}
 
-  <!-- Footer (styles defined in common.css) -->
+  <!-- Footer (styled in common.css) -->
   <footer>
-    <p>&copy; 2025 BIZZFINDERZ. All rights reserved.</p>
+    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
   </footer>
 </body>
-</html>
+</html> 

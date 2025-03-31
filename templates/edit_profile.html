@@ -1,0 +1,236 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile - BIZZFINDERZ</title>
+  <link rel="stylesheet" href="{% static 'common.css' %}">
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+  
+  <style>
+    .profile-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .profile-header {
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    .profile-pic-section {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .current-pic {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #004d4d;
+      margin-bottom: 15px;
+    }
+
+    .default-profile-pic {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background-color: #004d4d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 52px;
+      margin: 0 auto 15px;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .success-message {
+      color: green;
+      font-size: 14px;
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #e8f5e9;
+      border-radius: 5px;
+    }
+
+    .submit-button {
+      background-color: #004d4d;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .submit-button:hover {
+      background-color: #006666;
+      transform: scale(1.05);
+    }
+
+    .cancel-button {
+      background-color: #666;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      margin-left: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .cancel-button:hover {
+      background-color: #777;
+      transform: scale(1.05);
+    }
+
+    .back-to-top {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #004d4d;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .back-to-top:hover {
+      color: #006666;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      Bizz<span class="highlight">Finderz</span>
+    </div>
+    <nav>
+      <ul class="nav">
+        <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
+        <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+        {% if user.is_authenticated %}
+          <li class="profile-dropdown">
+            <a href="#" class="profile-trigger text-light">
+              {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="nav-profile-pic">
+              {% endif %}
+              {{ user.username }}
+            </a>
+            <div class="dropdown-content">
+              <a href="{% url 'profile' %}">Profile</a>
+              <a href="{% url 'edit_profile' %}">Edit Profile</a>
+              <hr class="divider">
+              <a href="{% url 'logout' %}">Logout</a>
+            </div>
+          </li>
+        {% else %}
+          <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+        {% endif %}
+        <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <div class="profile-container">
+      <h2>Edit Profile</h2>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="{% if message.tags %}{{ message.tags }}-message{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="profile-pic-section">
+          {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="Current Profile Picture" class="current-pic">
+          {% else %}
+            <div class="default-profile-pic">
+              {{ user.username|make_list|first|upper }}
+            </div>
+          {% endif %}
+          <div class="form-group">
+            <label for="id_profile_picture">Change Profile Picture</label>
+            {{ form.profile_picture }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="id_username">Username</label>
+          {{ form.username }}
+        </div>
+
+        <div class="form-group">
+          <label for="id_email">Email</label>
+          <input type="email" value="{{ user.email }}" class="form-control" disabled readonly>
+        </div>
+
+        <div class="password-change-section">
+          <h3>Change Password (Optional)</h3>
+          <div class="form-group">
+            <label for="id_old_password">Current Password</label>
+            <input type="password" name="old_password" id="id_old_password" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="id_new_password1">New Password</label>
+            <input type="password" name="new_password1" id="id_new_password1" class="form-control">
+            <p class="error-message" id="password-error" style="display: none;">Passwords do not match</p>
+          </div>
+
+          <div class="form-group">
+            <label for="id_new_password2">Confirm New Password</label>
+            <input type="password" name="new_password2" id="id_new_password2" class="form-control">
+          </div>
+        </div>
+
+        <button type="submit" class="submit-button">Save Changes</button>
+        <a href="{% url 'profile' %}" class="cancel-button">Cancel</a>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <h3>About Us</h3>
+    <p>Welcome to <span class="highlight">BizzFinderz</span>, your trusted platform for connecting with businesses that meet your needs.</p>
+    <a href="#" class="back-to-top">Back to Top</a>
+  </footer>
+</body>
+</html>

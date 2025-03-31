@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Search Form -->
+    <div class="search-container bg-light p-4 rounded shadow-sm mb-4">
+        <form action="{% url 'search' %}" method="GET" class="row g-3">
+            <div class="col-md-8">
+                <input type="text" name="q" class="form-control form-control-lg" value="{{ query }}" placeholder="Search for businesses...">
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select form-select-lg">
+                    <option value="all" {% if category == 'all' %}selected{% endif %}>All Categories</option>
+                    <option value="restaurants" {% if category == 'restaurants' %}selected{% endif %}>Restaurants</option>
+                    <option value="hotels" {% if category == 'hotels' %}selected{% endif %}>Hotels</option>
+                    <option value="gyms" {% if category == 'gyms' %}selected{% endif %}>Gyms</option>
+                    <option value="hospitals" {% if category == 'hospitals' %}selected{% endif %}>Hospitals</option>
+                    <option value="retail" {% if category == 'retail' %}selected{% endif %}>Retail Stores</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if query %}
+        <!-- Search Results -->
+        <h2 class="mb-4">Search Results for "{{ query }}"</h2>
+        {% if total_results == 0 %}
+            <div class="alert alert-info">
+                No results found for your search.
+            </div>
+        {% else %}
+            <p class="text-muted mb-4">Found {{ total_results }} results</p>
+
+            {% if restaurants %}
+                <h3 class="mb-3">Restaurants</h3>
+                <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+                    {% for restaurant in restaurants %}
+                        <div class="col">
+                            <div class="card h-100">
+                                {% if restaurant.image %}
+                                    <img src="{{ restaurant.image.url }}" class="card-img-top" alt="{{ restaurant.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ restaurant.name }}</h5>
+                                    <p class="card-text">{{ restaurant.description|truncatechars:100 }}</p>
+                                    <p class="card-text"><small class="text-muted">Rating: {{ restaurant.rating }} ⭐</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if hotels %}
+                <h3 class="mb-3">Hotels</h3>
+                <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+                    {% for hotel in hotels %}
+                        <div class="col">
+                            <div class="card h-100">
+                                {% if hotel.image %}
+                                    <img src="{{ hotel.image.url }}" class="card-img-top" alt="{{ hotel.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ hotel.name }}</h5>
+                                    <p class="card-text">{{ hotel.description|truncatechars:100 }}</p>
+                                    <p class="card-text"><small class="text-muted">Rating: {{ hotel.rating }} ⭐</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if gyms %}
+                <h3 class="mb-3">Gyms</h3>
+                <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+                    {% for gym in gyms %}
+                        <div class="col">
+                            <div class="card h-100">
+                                {% if gym.image %}
+                                    <img src="{{ gym.image.url }}" class="card-img-top" alt="{{ gym.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ gym.name }}</h5>
+                                    <p class="card-text">{{ gym.description|truncatechars:100 }}</p>
+                                    <p class="card-text"><small class="text-muted">Rating: {{ gym.rating }} ⭐</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if hospitals %}
+                <h3 class="mb-3">Hospitals</h3>
+                <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+                    {% for hospital in hospitals %}
+                        <div class="col">
+                            <div class="card h-100">
+                                {% if hospital.image %}
+                                    <img src="{{ hospital.image.url }}" class="card-img-top" alt="{{ hospital.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ hospital.name }}</h5>
+                                    <p class="card-text">{{ hospital.description|truncatechars:100 }}</p>
+                                    <p class="card-text"><small class="text-muted">Rating: {{ hospital.rating }} ⭐</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if retail_stores %}
+                <h3 class="mb-3">Retail Stores</h3>
+                <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+                    {% for store in retail_stores %}
+                        <div class="col">
+                            <div class="card h-100">
+                                {% if store.image %}
+                                    <img src="{{ store.image.url }}" class="card-img-top" alt="{{ store.name }}">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ store.name }}</h5>
+                                    <p class="card-text">{{ store.description|truncatechars:100 }}</p>
+                                    <p class="card-text"><small class="text-muted">Rating: {{ store.rating }} ⭐</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %} 

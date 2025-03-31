@@ -7,7 +7,7 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, unique=True)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
-    profile_image = models.ImageField(upload_to="profile", blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profile", blank=True, null=True)
 
     USERNAME_FIELD = "phone_number"  # Login using phone number
     REQUIRED_FIELDS = ["username", "email"]
@@ -111,3 +111,124 @@ class MenuItem(models.Model):
 
     def __str__(self):
         return f"{self.name} at {self.restaurant.name}"
+
+
+class Hotel(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(max_length=500)
+    image_url = models.CharField(max_length=200)  
+    rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
+        default=0
+    )
+    review = models.TextField(max_length=500)
+    price_range = models.CharField(max_length=10, choices=Restaurant.PRICE_CHOICES, default='$$')
+    address = models.CharField(max_length=200)
+    phone = models.CharField(max_length=20)
+    website = models.URLField(blank=True, null=True)
+    amenities = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def rating_range(self):
+        """Returns a range of 5 for star display"""
+        return range(1, 6)
+
+
+class RetailStore(models.Model):
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='retail_stores/')
+    rating = models.FloatField(default=0.0)
+    review = models.TextField(blank=True)
+    store_type = models.CharField(max_length=50, help_text="e.g., General Store, Electronics, Fashion, etc.")
+    operating_hours = models.CharField(max_length=100, help_text="e.g., '9:00 AM - 10:00 PM'")
+    payment_methods = models.CharField(max_length=200, help_text="e.g., 'Cash, Card, UPI'")
+    address = models.TextField()
+    special_offers = models.TextField(blank=True, help_text="Any ongoing offers or discounts")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Retail Store"
+        verbose_name_plural = "Retail Stores"
+        ordering = ['-rating', '-created_at']
+
+
+class Gym(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(max_length=500)
+    image = models.ImageField(upload_to='gyms/', blank=True, null=True)
+    address = models.CharField(max_length=200)
+    phone = models.CharField(max_length=20)
+    website = models.URLField(blank=True, null=True)
+    rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
+        default=0
+    )
+    review_count = models.PositiveIntegerField(default=0)
+    price_range = models.CharField(max_length=10, choices=Restaurant.PRICE_CHOICES, default='$$')
+    opening_hours = models.CharField(max_length=200, blank=True)
+    facilities = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Hospital(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(max_length=500)
+    image = models.ImageField(upload_to='hospitals/', blank=True, null=True)
+    address = models.CharField(max_length=200)
+    phone = models.CharField(max_length=20)
+    website = models.URLField(blank=True, null=True)
+    rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
+        default=0
+    )
+    review_count = models.PositiveIntegerField(default=0)
+    specialties = models.TextField(blank=True)
+    emergency_services = models.BooleanField(default=True)
+    insurance_accepted = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message from {self.name}"
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    icon = models.CharField(max_length=50, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Categories"

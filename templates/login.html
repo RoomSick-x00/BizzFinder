@@ -4,8 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - BIZZFINDER</title>
-  <link rel="stylesheet" href="{% static 'common.css' %}"> 
+  <title>Login - BIZZFINDERZ</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'common.css' %}">
+  
   <style>
     .auth-container {
       max-width: 500px;
@@ -52,18 +54,6 @@
       color: #ffd700;
       transform: scale(1.05);
     }
-    .auth-container .toggle-link {
-      margin-top: 15px;
-      font-size: 14px;
-    }
-    .auth-container .toggle-link a {
-      color: #004d4d;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .auth-container .toggle-link a:hover {
-      text-decoration: underline;
-    }
     .error-message {
       color: red;
       font-size: 14px;
@@ -72,14 +62,39 @@
   </style>
 </head>
 <body>
+
   <header>
-    <div class="logo">BIZZ<span class="highlight">FINDERZ</span></div>
-    <nav>
-      <ul>
-        <li><a href="{% url 'dashboard' %}">Home</a></li>
-        <li><a href="{% url 'categoriesnew' %}">Categories</a></li>  
-        <li><a href="{% url 'contactus' %}">Contact Us</a></li>
-      </ul>
+    <div class="logo">
+      <a href="{% url 'index' %}">Bizz<span class="highlight">Finderz</span></a>
+    </div>
+    <nav class="navbar navbar-expand-lg">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="nav">
+          <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
+          <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+          {% if user.is_authenticated %}
+            <li class="profile-dropdown">
+              <a href="#" class="profile-trigger">
+                <img src="{{ user.profile_picture.url|default:'/static/images/default-profile.png' }}" 
+                     alt="Profile Picture" class="nav-profile-pic">
+                {{ user.username }}
+              </a>
+              <div class="dropdown-content">
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'edit_profile' %}">Edit Profile</a>
+                <hr class="divider">
+                <a href="{% url 'logout' %}">Logout</a>
+              </div>
+            </li>
+          {% else %}
+            <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+          {% endif %}
+          <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
+        </ul>
+      </div>
     </nav>
   </header>
 
@@ -87,30 +102,40 @@
     <div class="container">
       <div class="auth-container">
         <h2>Login</h2>
-        
-        {% if form.errors %}
-          <div class="error-message">
-            Invalid login credentials. Please try again.
-          </div>
-        {% endif %}
-        
-        <form action="{% url 'login' %}" method="post">  
+
+        <form method="POST" action="{% url 'login' %}">
           {% csrf_token %}
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" placeholder="Enter your username" required>
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+
+          <label for="id_username">Username/Email/Phone:</label>
+          <input type="text" name="username" id="id_username" required>
+
+          <label for="id_password">Password:</label>
+          <input type="password" name="password" id="id_password" required>
+
+          {% for field in form %}
+            {% for error in field.errors %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
+            <p class="error-message">{{ error }}</p>
+          {% endfor %}
+
           <button type="submit">Login</button>
         </form>
+
         <div class="toggle-link">
-          Don't have an account? <a href="{% url 'signup' %}">Signup</a>
+          Don't have an account? <a href="{% url 'signup' %}">Sign up</a>
         </div>
       </div>
     </div>
   </main>
 
-  <footer>
-    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
+  <footer class="about-us">
+    <h3>About Us</h3>
+    <p>Welcome to <span class="highlight">BizzFinderz</span>, your trusted platform for connecting with businesses that meet your needs. Explore our diverse categories and enjoy a seamless user experience with just a few clicks!</p>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
