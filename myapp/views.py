@@ -71,19 +71,63 @@ def categories(request):
 
 def newrestaurant(request):
     try:
-        restaurants = Restaurant.objects.annotate(avg_rating=Avg('review__rating')).order_by('-avg_rating')
+        print("\n=== Debug Information ===")
+        print("User authenticated:", request.user.is_authenticated)
+        print("Current user:", request.user)
+        
+        # Get all restaurants and force evaluation
+        restaurants = list(Restaurant.objects.all())
+        total_count = len(restaurants)
+        print(f"\nRestaurants in database: {total_count}")
+        
+        if total_count > 0:
+            for rest in restaurants:
+                print(f"""
+Restaurant:
+- ID: {rest.id}
+- Name: {rest.name}
+- Description: {rest.description[:50]}...
+- Rating: {rest.rating}
+- Image: {bool(rest.image)}
+""")
+        
+        # Pagination
         paginator = Paginator(restaurants, 12)
-        page = request.GET.get('page')
+        page = request.GET.get('page', 1)
         try:
-            restaurants = paginator.page(page)
+            paginated_restaurants = paginator.page(page)
         except PageNotAnInteger:
-            restaurants = paginator.page(1)
+            paginated_restaurants = paginator.page(1)
         except EmptyPage:
-            restaurants = paginator.page(paginator.num_pages)
-        return render(request, 'newrestaurant.html', {'restaurants': restaurants})
+            paginated_restaurants = paginator.page(paginator.num_pages)
+        
+        context = {
+            'restaurants': paginated_restaurants,
+            'total_count': total_count,
+            'is_authenticated': request.user.is_authenticated,
+            'current_user': str(request.user),
+        }
+        
+        print("\nContext being sent to template:", context)
+        print("=== End Debug Information ===\n")
+        
+        return render(request, 'newrestaurant.html', context)
     except Exception as e:
-        messages.error(request, 'Error loading restaurants. Please try again.')
-        return render(request, 'newrestaurant.html', {'restaurants': []})
+        import traceback
+        print("\n=== Error Information ===")
+        print(f"Error type: {type(e)}")
+        print(f"Error message: {str(e)}")
+        print("Traceback:")
+        print(traceback.format_exc())
+        print("=== End Error Information ===\n")
+        
+        return render(request, 'newrestaurant.html', {
+            'restaurants': [],
+            'total_count': 0,
+            'error': str(e),
+            'is_authenticated': request.user.is_authenticated,
+            'current_user': str(request.user),
+        })
 
 def hotel(request):
     try:
@@ -253,33 +297,52 @@ def profile_view(request):
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
+        print("\n=== Debug Information ===")
+        print("POST data:", request.POST)
+        print("FILES:", request.FILES)
+        
         form = CustomProfileEditForm(request.POST, request.FILES, instance=request.user)
-        password_form = PasswordChangeForm(request.user, request.POST)
         
-        # Check if any password fields are filled
-        new_password = request.POST.get('new_password1', '').strip()
-        if new_password:
-            # Password change attempted
-            if password_form.is_valid():
-                user = password_form.save()
-                update_session_auth_hash(request, user)
-                messages.success(request, 'Password updated successfully!')
-                return redirect('profile')
-            else:
-                for error in password_form.errors.values():
-                    messages.error(request, error[0])
-        
-        # Handle profile updates
+        # Handle profile updates first
         if form.is_valid():
+            print("Profile form is valid")
             form.save()
             messages.success(request, 'Profile updated successfully!')
+            
+            # Check if any password fields are filled
+            new_password = request.POST.get('new_password1', '').strip()
+            if new_password:  # Only process password if new password is provided
+                print("Password change attempted")
+                password_form = PasswordChangeForm(request.user, request.POST)
+                if password_form.is_valid():
+                    print("Password form is valid")
+                    user = password_form.save()
+                    update_session_auth_hash(request, user)
+                    messages.success(request, 'Password updated successfully!')
+                else:
+                    print("Password form errors:", password_form.errors)
+                    for error in password_form.errors.values():
+                        messages.error(request, error[0])
+                    # Don't redirect here, show the errors
+                    return render(request, 'edit_profile.html', {
+                        'form': form,
+                        'password_form': password_form
+                    })
+            
             return redirect('profile')
         else:
+            print("Profile form errors:", form.errors)
             for error in form.errors.values():
                 messages.error(request, error[0])
+            password_form = PasswordChangeForm(request.user)
     else:
         form = CustomProfileEditForm(instance=request.user)
         password_form = PasswordChangeForm(request.user)
+    
+    print("\nContext being sent to template:")
+    print("Form:", form)
+    print("Password Form:", password_form)
+    print("=== End Debug Information ===\n")
     
     return render(request, 'edit_profile.html', {
         'form': form,

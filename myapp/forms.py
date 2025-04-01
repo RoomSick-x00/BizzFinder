@@ -46,18 +46,28 @@ class CustomProfileEditForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Make email required
-        self.fields['email'].required = True
         # Make profile picture optional
         self.fields['profile_picture'].required = False
         
-        # Make email readonly if already set
+        # Make username optional and readonly if already set
+        if self.instance and self.instance.username:
+            self.fields['username'].required = False
+            self.fields['username'].widget.attrs['readonly'] = True
+        
+        # Make email readonly and not required if already set
         if self.instance and self.instance.email:
+            self.fields['email'].required = False
             self.fields['email'].widget.attrs['readonly'] = True
             self.fields['email'].widget.attrs['disabled'] = True
             
     def clean_email(self):
-        # If email is already set, return the original email
+        # Always return the instance email if it exists
         if self.instance and self.instance.email:
             return self.instance.email
         return self.cleaned_data.get('email')
+        
+    def clean_username(self):
+        # Always return the instance username if it exists
+        if self.instance and self.instance.username:
+            return self.instance.username
+        return self.cleaned_data.get('username')

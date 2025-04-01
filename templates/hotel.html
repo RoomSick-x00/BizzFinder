@@ -5,15 +5,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotel Ratings & Reviews - BIZZFINDER</title>
+  <title>Hotel Reviews - BIZZFINDER</title>
  
   <link rel="stylesheet" href = "{% static 'common.css' %}">
 
   <style>
-    /* Remove visited link color */
-    .logo a, .logo a:visited {
-      color: inherit;
+    /* Override header styles to match common.css exactly */
+    header {
+      box-sizing: border-box;
+      padding: 0.5rem 2rem;
+      height: 56px;
+      width: 100%;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--primary-color);
+    }
+
+    .nav {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 1.5rem;
+      align-items: center;
+      min-width: 400px;
+      justify-content: flex-end;
+      height: 100%;
+    }
+
+    .nav-link {
+      color: var(--text-light);
       text-decoration: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
     }
     
     /* Grid Layout for Hotel Cards */
@@ -81,15 +111,21 @@
   </style>
 </head>
 <body>
-  <!-- Fixed Header (styled in common.css) -->
   <header>
     <div class="logo">
-       <a href="{% url 'index' %}">Bizz<span class="highlight">Finderz</span></a>
+      <a href="{% url 'index' %}" style="text-decoration: none; color: var(--text-light);">
+        Bizz<span class="highlight">Finderz</span>
+      </a>
     </div>
     <nav>
       <ul class="nav">
-        <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
-        <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+        <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+        <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
+        <li><a href="{% url 'restaurant' %}" class="nav-link">Restaurants</a></li>
+        <li><a href="{% url 'hotel' %}" class="nav-link">Hotels</a></li>
+        <li><a href="{% url 'hospital' %}" class="nav-link">Hospitals</a></li>
+        <li><a href="{% url 'gym' %}" class="nav-link">Gyms</a></li>
+        <li><a href="{% url 'retail' %}" class="nav-link">Retail</a></li>
         {% if user.is_authenticated %}
           <li class="profile-dropdown">
             <a href="#" class="profile-trigger">
@@ -106,9 +142,9 @@
             </div>
           </li>
         {% else %}
-          <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+          <li><a href="{% url 'signup' %}" class="nav-link">Sign Up/Login</a></li>
         {% endif %}
-        <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
+        <li><a href="{% url 'contactus' %}" class="nav-link">Contact Us</a></li>
       </ul>
     </nav>
   </header>

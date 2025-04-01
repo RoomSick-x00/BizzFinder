@@ -1,69 +1,104 @@
-{%load static%}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Retail Store Ratings & Reviews - BIZZFINDER</title>
-  <!-- Link to the external common CSS file -->
-  <link rel="stylesheet" href ="{% static 'common.css' %}">
-  <!-- Page-Specific Styles for Retail Store Page -->
+  <title>Retail Store Reviews - BIZZFINDER</title>
+  <link rel="stylesheet" href="{% static 'common.css' %}">
   <style>
-    /* Grid Layout for Retail Store Cards */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    header {
+      box-sizing: border-box;
+      padding: 0.5rem 2rem;
+      height: 56px;
+      width: 100%;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--primary-color);
+    }
+
+    .nav {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 1.5rem;
+      align-items: center;
+      min-width: 400px;
+      justify-content: flex-end;
+      height: 100%;
+    }
+
+    .nav-link {
+      color: var(--text-light);
+      text-decoration: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .reviews-grid {
+      display: grid;  
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
       padding: 20px;
+      margin-top: 60px;
     }
-    .card {
+
+    .retail {
       background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       transition: transform 0.3s;
     }
-    .card:hover {
+
+    .retail:hover {
       transform: scale(1.05);
     }
-    .card img {
+
+    .retail img {
       width: 100%;
-      height: 150px;
+      height: 200px;
       object-fit: cover;
       border-radius: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
-    .card h2 {
-      margin: 10px 0 5px;
-      color: #333;
-      font-size: 20px;
+
+    .retail h3 {
+      margin: 15px 0 10px;
+      color: #004d4d;
+      font-size: 1.5rem;
     }
+
     .rating {
       color: gold;
-      font-size: 18px;
-      margin-bottom: 10px;
+      font-size: 1.2rem;
+      margin: 10px 0;
     }
-    .card p {
+
+    .retail p {
       font-size: 16px;
-      color: #666;
-      margin: 0;
+      color: #333;
+      line-height: 1.6;
     }
-    .store-details {
+
+    .retail-details {
       margin-top: 15px;
       padding-top: 15px;
       border-top: 1px solid #eee;
     }
-    .review-form {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
+
+    .retail-details p {
+      margin: 5px 0;
     }
-    .login-prompt {
-      text-align: center;
-      margin-top: 15px;
-      color: #666;
-    }
+
     .pagination {
       display: flex;
       justify-content: center;
@@ -72,6 +107,7 @@
       margin: 2rem 0;
       padding: 1rem;
     }
+
     .pagination-link {
       padding: 0.5rem 1rem;
       border: 1px solid var(--primary-color);
@@ -80,10 +116,12 @@
       text-decoration: none;
       transition: all 0.3s ease;
     }
+
     .pagination-link:hover {
       background-color: var(--primary-color);
       color: white;
     }
+
     .pagination-current {
       padding: 0.5rem 1rem;
       background-color: var(--primary-color);
@@ -91,18 +129,69 @@
       border-radius: 4px;
       font-weight: bold;
     }
+
+    .review-form {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .review-form textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    .review-form button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .review-form button:hover {
+      background: #006666;
+    }
+
+    .login-prompt {
+      text-align: center;
+      margin-top: 15px;
+      color: #666;
+    }
+
+    .login-prompt a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .login-prompt a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <!-- Fixed Header (styled in common.css) -->
-  <header class="d-flex justify-content-between align-items-center px-4">
+  <header>
     <div class="logo">
-      Bizz<span class="highlight">Finderz</span>
+      <a href="{% url 'index' %}" style="text-decoration: none; color: var(--text-light);">
+        Bizz<span class="highlight">Finderz</span>
+      </a>
     </div>
     <nav>
       <ul class="nav">
-        <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
-        <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+        <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+        <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
+        <li><a href="{% url 'restaurant' %}" class="nav-link">Restaurants</a></li>
+        <li><a href="{% url 'hotel' %}" class="nav-link">Hotels</a></li>
+        <li><a href="{% url 'hospital' %}" class="nav-link">Hospitals</a></li>
+        <li><a href="{% url 'gym' %}" class="nav-link">Gyms</a></li>
+        <li><a href="{% url 'retail' %}" class="nav-link">Retail</a></li>
         {% if user.is_authenticated %}
           <li class="profile-dropdown">
             <a href="#" class="profile-trigger">
@@ -119,89 +208,95 @@
             </div>
           </li>
         {% else %}
-          <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+          <li><a href="{% url 'signup' %}" class="nav-link">Sign Up/Login</a></li>
         {% endif %}
-        <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
+        <li><a href="{% url 'contactus' %}" class="nav-link">Contact Us</a></li>
       </ul>
     </nav>
   </header>
 
-  <!-- Main Content Area -->
   <main>
     <div class="container">
       <h1>Retail Store Ratings & Reviews</h1>
-      <div class="grid">
+      
+      <div class="reviews-grid">
         {% for store in stores %}
-        <div class="card">
-          <img src="{{ store.image.url }}" alt="{{ store.name }}">
-          <h2>{{ store.name }}</h2>
-          <div class="rating">
-            {% for i in "12345"|make_list %}
-              {% if forloop.counter <= store.rating %}★{% else %}☆{% endif %}
-            {% endfor %}
-            ({{ store.rating }})
-          </div>
-          <p class="reviews">"{{ store.review }}"</p>
-          <div class="store-details">
-            <p><strong>Store Type:</strong> {{ store.store_type }}</p>
-            <p><strong>Operating Hours:</strong> {{ store.operating_hours }}</p>
-            <p><strong>Payment Methods:</strong> {{ store.payment_methods }}</p>
-            <p><strong>Address:</strong> {{ store.address }}</p>
-            <p><strong>Special Offers:</strong> {{ store.special_offers }}</p>
-          </div>
-          {% if user.is_authenticated %}
-          <form action="{% url 'add_review' %}" method="post" class="review-form">
-            {% csrf_token %}
-            <input type="hidden" name="business_type" value="retail">
-            <input type="hidden" name="business_id" value="{{ store.id }}">
-            <input type="hidden" name="next" value="{% url 'newretail' %}">
-            <div class="rating-input">
-              <label>Your Rating:</label>
-              <select name="rating" required>
-                <option value="1">1 Star</option>
-                <option value="2">2 Stars</option>
-                <option value="3">3 Stars</option>
-                <option value="4">4 Stars</option>
-                <option value="5">5 Stars</option>
-              </select>
+          <div class="retail">
+            {% if store.image %}
+              <img src="{{ store.image.url }}" alt="{{ store.name }}">
+            {% else %}
+              <img src="{% static 'images/default-retail.jpg' %}" alt="{{ store.name }}">
+            {% endif %}
+            <h3>{{ store.name }}</h3>
+            <div class="rating">
+              {{ store.stars_display }}
+              ({{ store.rating }})
             </div>
-            <textarea name="comment" placeholder="Write your review..." required></textarea>
-            <button type="submit">Submit Review</button>
-          </form>
-          {% else %}
-          <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
-          {% endif %}
-        </div>
+            <p>{{ store.description }}</p>
+            <div class="retail-details">
+              <p><strong>Store Type:</strong> {{ store.store_type }}</p>
+              <p><strong>Categories:</strong> {{ store.categories }}</p>
+              <p><strong>Opening Hours:</strong> {{ store.opening_hours }}</p>
+              <p><strong>Payment Methods:</strong> {{ store.payment_methods }}</p>
+              <p><strong>Address:</strong> {{ store.address }}</p>
+              <p><strong>Phone:</strong> {{ store.phone }}</p>
+              {% if store.website %}
+              <p><strong>Website:</strong> <a href="{{ store.website }}" target="_blank">Visit Website</a></p>
+              {% endif %}
+            </div>
+
+            {% if user.is_authenticated %}
+            <form action="{% url 'add_review' %}" method="post" class="review-form">
+              {% csrf_token %}
+              <input type="hidden" name="business_type" value="retail">
+              <input type="hidden" name="business_id" value="{{ store.id }}">
+              <input type="hidden" name="next" value="{% url 'retail' %}">
+              <div class="rating-input">
+                <label>Your Rating:</label>
+                <select name="rating" required>
+                  <option value="1">1 Star</option>
+                  <option value="2">2 Stars</option>
+                  <option value="3">3 Stars</option>
+                  <option value="4">4 Stars</option>
+                  <option value="5">5 Stars</option>
+                </select>
+              </div>
+              <textarea name="comment" placeholder="Write your review..." required></textarea>
+              <button type="submit">Submit Review</button>
+            </form>
+            {% else %}
+            <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
+            {% endif %}
+          </div>
         {% empty %}
-        <p class="no-stores">No retail stores available at the moment.</p>
+          <p class="no-stores">No retail stores available at the moment.</p>
         {% endfor %}
       </div>
+
+      {% if stores.has_other_pages %}
+      <div class="pagination">
+        {% if stores.has_previous %}
+          <a href="?page={{ stores.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
+        {% endif %}
+        
+        {% for num in stores.paginator.page_range %}
+          {% if stores.number == num %}
+            <span class="pagination-current">{{ num }}</span>
+          {% else %}
+            <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+        
+        {% if stores.has_next %}
+          <a href="?page={{ stores.next_page_number }}" class="pagination-link">Next &raquo;</a>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
   </main>
 
-  {% if stores.has_other_pages %}
-  <div class="pagination">
-    {% if stores.has_previous %}
-      <a href="?page={{ stores.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
-    {% endif %}
-    
-    {% for num in stores.paginator.page_range %}
-      {% if stores.number == num %}
-        <span class="pagination-current">{{ num }}</span>
-      {% else %}
-        <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
-      {% endif %}
-    {% endfor %}
-    
-    {% if stores.has_next %}
-      <a href="?page={{ stores.next_page_number }}" class="pagination-link">Next &raquo;</a>
-    {% endif %}
-  </div>
-  {% endif %}
-
-  <!-- Footer (styled in common.css) -->
   <footer>
-    <p>&copy; 2025 BIZZFINDERZ. All rights reserved.</p>
+    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
   </footer>
 </body>
 </html>

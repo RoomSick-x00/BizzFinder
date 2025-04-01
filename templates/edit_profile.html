@@ -76,6 +76,13 @@
       margin-top: 5px;
     }
 
+    .help-text {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+
     .success-message {
       color: green;
       font-size: 14px;
@@ -175,7 +182,7 @@
         {% endfor %}
       {% endif %}
 
-      <form method="POST" enctype="multipart/form-data">
+      <form method="POST" enctype="multipart/form-data" action="{% url 'edit_profile' %}">
         {% csrf_token %}
         
         <div class="profile-pic-section">
@@ -188,13 +195,23 @@
           {% endif %}
           <div class="form-group">
             <label for="id_profile_picture">Change Profile Picture</label>
-            {{ form.profile_picture }}
+            <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*">
+            {% if form.profile_picture.errors %}
+              {% for error in form.profile_picture.errors %}
+                <p class="error-message">{{ error }}</p>
+              {% endfor %}
+            {% endif %}
           </div>
         </div>
 
         <div class="form-group">
           <label for="id_username">Username</label>
-          {{ form.username }}
+          <input type="text" name="username" id="id_username" value="{{ user.username }}" class="form-control" readonly>
+          {% if form.username.errors %}
+            {% for error in form.username.errors %}
+              <p class="error-message">{{ error }}</p>
+            {% endfor %}
+          {% endif %}
         </div>
 
         <div class="form-group">
@@ -204,20 +221,35 @@
 
         <div class="password-change-section">
           <h3>Change Password (Optional)</h3>
+          <p class="help-text">Leave these fields empty if you don't want to change your password.</p>
           <div class="form-group">
-            <label for="id_old_password">Current Password</label>
+            <label for="id_old_password">Current Password (Optional)</label>
             <input type="password" name="old_password" id="id_old_password" class="form-control">
+            {% if password_form.old_password.errors %}
+              {% for error in password_form.old_password.errors %}
+                <p class="error-message">{{ error }}</p>
+              {% endfor %}
+            {% endif %}
           </div>
 
           <div class="form-group">
-            <label for="id_new_password1">New Password</label>
+            <label for="id_new_password1">New Password (Optional)</label>
             <input type="password" name="new_password1" id="id_new_password1" class="form-control">
-            <p class="error-message" id="password-error" style="display: none;">Passwords do not match</p>
+            {% if password_form.new_password1.errors %}
+              {% for error in password_form.new_password1.errors %}
+                <p class="error-message">{{ error }}</p>
+              {% endfor %}
+            {% endif %}
           </div>
 
           <div class="form-group">
-            <label for="id_new_password2">Confirm New Password</label>
+            <label for="id_new_password2">Confirm New Password (Optional)</label>
             <input type="password" name="new_password2" id="id_new_password2" class="form-control">
+            {% if password_form.new_password2.errors %}
+              {% for error in password_form.new_password2.errors %}
+                <p class="error-message">{{ error }}</p>
+              {% endfor %}
+            {% endif %}
           </div>
         </div>
 

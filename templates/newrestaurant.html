@@ -9,58 +9,120 @@
   <link rel="stylesheet" href="{% static 'common.css' %}">
   <!-- Page-Specific Styles for Restaurant Reviews -->
   <style>
+    /* Override header styles to match common.css exactly */
+    header {
+      box-sizing: border-box;
+      padding: 0.5rem 2rem;
+      height: 56px;
+      width: 100%;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--primary-color);
+    }
+
+    .nav {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      gap: 1.5rem;
+      align-items: center;
+      min-width: 400px;
+      justify-content: flex-end;
+      height: 100%;
+    }
+
+    .nav-link {
+      color: var(--text-light);
+      text-decoration: none;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
     /* Grid Layout for Restaurant Reviews */
     .reviews-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
-      padding: 0 20px;
+      padding: 20px;
+      margin-top: 60px;
     }
     .restaurant {
       background: #fff;
       border-radius: 8px;
       padding: 15px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: transform 0.3s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
     }
     .restaurant:hover {
-      transform: scale(1.02);
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     .restaurant img {
       width: 100%;
       height: 200px;
       object-fit: cover;
       border-radius: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
-    .restaurant h2 {
-      margin: 10px 0 5px;
+    .restaurant h3 {
       color: #333;
+      margin: 10px 0;
+      font-size: 1.5rem;
     }
     .rating {
-      color: #f39c12;
-      font-size: 18px;
-      margin-bottom: 10px;
+      color: #ffd700;
+      font-size: 1.2rem;
+      margin: 10px 0;
     }
-    .review,
-    .Address {
-      color: #555;
-      margin: 5px 0;
+    .restaurant p {
+      color: #666;
+      line-height: 1.6;
     }
     .restaurant-details {
       margin-top: 15px;
       padding-top: 15px;
       border-top: 1px solid #eee;
-      width: 100%;
     }
-    .review-form {
-      margin-top: 20px;
-      padding-top: 20px;
+    .restaurant-details p {
+      margin: 5px 0;
+    }
+    .menu-items {
+      margin-top: 15px;
+      padding-top: 15px;
       border-top: 1px solid #eee;
-      width: 100%;
+    }
+    .menu-item {
+      margin: 10px 0;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+    .menu-item-name {
+      font-weight: bold;
+      color: #333;
+    }
+    .menu-item-price {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+    .menu-item-tags {
+      margin-top: 5px;
+    }
+    .menu-item-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      margin-right: 5px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 12px;
+      font-size: 0.8rem;
     }
     .login-prompt {
       text-align: center;
@@ -97,15 +159,21 @@
   </style>
 </head>
 <body>
-  <!-- Fixed Header (styles defined in common.css) -->
-  <header class="d-flex justify-content-between align-items-center px-4">
+  <header>
     <div class="logo">
-      Bizz<span class="highlight">Finderz</span>
+      <a href="{% url 'index' %}" style="text-decoration: none; color: var(--text-light);">
+        Bizz<span class="highlight">Finderz</span>
+      </a>
     </div>
     <nav>
       <ul class="nav">
-        <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
-        <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+        <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+        <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
+        <li><a href="{% url 'restaurant' %}" class="nav-link">Restaurants</a></li>
+        <li><a href="{% url 'hotel' %}" class="nav-link">Hotels</a></li>
+        <li><a href="{% url 'hospital' %}" class="nav-link">Hospitals</a></li>
+        <li><a href="{% url 'gym' %}" class="nav-link">Gyms</a></li>
+        <li><a href="{% url 'retail' %}" class="nav-link">Retail</a></li>
         {% if user.is_authenticated %}
           <li class="profile-dropdown">
             <a href="#" class="profile-trigger">
@@ -122,9 +190,9 @@
             </div>
           </li>
         {% else %}
-          <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
+          <li><a href="{% url 'signup' %}" class="nav-link">Sign Up/Login</a></li>
         {% endif %}
-        <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
+        <li><a href="{% url 'contactus' %}" class="nav-link">Contact Us</a></li>
       </ul>
     </nav>
   </header>
@@ -132,32 +200,59 @@
   <!-- Main Content Area -->
   <main>
     <div class="container">
-      <h1>Restaurant Reviews</h1>
+      <h1>Restaurant Ratings & Reviews</h1>
+      
       <div class="reviews-grid">
         {% for restaurant in restaurants %}
         <div class="restaurant">
-          <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
-          <h2>{{ restaurant.name }}</h2>
+          {% if restaurant.image %}
+            <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
+          {% else %}
+            <img src="{% static 'images/default-restaurant.jpg' %}" alt="{{ restaurant.name }}">
+          {% endif %}
+          <h3>{{ restaurant.name }}</h3>
           <div class="rating">
-            {% for i in "12345"|make_list %}
-              {% if forloop.counter <= restaurant.rating %}★{% else %}☆{% endif %}
-            {% endfor %}
+            {{ restaurant.stars_display }}
             ({{ restaurant.rating }})
           </div>
-          <p class="review">"{{ restaurant.review }}"</p>
-          <p class="Address">{{ restaurant.address }}</p>
+          <p>{{ restaurant.description }}</p>
           <div class="restaurant-details">
-            <p><strong>Cuisine Type:</strong> {{ restaurant.cuisine_type }}</p>
-            <p><strong>Price Range:</strong> {{ restaurant.price_range }}</p>
+            <p><strong>Cuisine:</strong> {{ restaurant.cuisine_type }}</p>
+            <p><strong>Price Range:</strong> {{ restaurant.get_price_range_display }}</p>
             <p><strong>Opening Hours:</strong> {{ restaurant.opening_hours }}</p>
-            <p><strong>Vegetarian Friendly:</strong> {% if restaurant.is_vegetarian_friendly %}Yes{% else %}No{% endif %}</p>
+            <p><strong>Address:</strong> {{ restaurant.address }}</p>
+            <p><strong>Phone:</strong> {{ restaurant.phone }}</p>
+            {% if restaurant.website %}
+            <p><strong>Website:</strong> <a href="{{ restaurant.website }}" target="_blank">Visit Website</a></p>
+            {% endif %}
           </div>
+
+          {% if restaurant.menu_items.all %}
+          <div class="menu-items">
+            <h4>Popular Menu Items</h4>
+            {% for item in restaurant.menu_items.all|slice:":3" %}
+            <div class="menu-item">
+              <div class="menu-item-name">{{ item.name }}</div>
+              <div class="menu-item-price">₹{{ item.price }}</div>
+              {% if item.description %}
+              <p>{{ item.description }}</p>
+              {% endif %}
+              <div class="menu-item-tags">
+                {% if item.is_vegetarian %}<span class="menu-item-tag">Vegetarian</span>{% endif %}
+                {% if item.is_vegan %}<span class="menu-item-tag">Vegan</span>{% endif %}
+                {% if item.is_gluten_free %}<span class="menu-item-tag">Gluten-Free</span>{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
           {% if user.is_authenticated %}
           <form action="{% url 'add_review' %}" method="post" class="review-form">
             {% csrf_token %}
             <input type="hidden" name="business_type" value="restaurant">
             <input type="hidden" name="business_id" value="{{ restaurant.id }}">
-            <input type="hidden" name="next" value="{% url 'newrestaurant' %}">
+            <input type="hidden" name="next" value="{% url 'restaurant' %}">
             <div class="rating-input">
               <label>Your Rating:</label>
               <select name="rating" required>
@@ -202,9 +297,9 @@
   </div>
   {% endif %}
 
-  <!-- Footer (styles defined in common.css) -->
+  <!-- Footer (styled in common.css) -->
   <footer>
-    <p>&copy; 2025 BIZZFINDERZ. All rights reserved.</p>
+    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
   </footer>
 </body>
 </html>
