@@ -1,11 +1,12 @@
 {% load static %}
+{% load custom_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gym Reviews - BIZZFINDER</title>
+  <title>Gyms - BIZZFINDER</title>
   <link rel="stylesheet" href="{% static 'common.css' %}">
   <style>
     header {
@@ -19,7 +20,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: var(--primary-color);
+      background-color: var(--primary-color, #007bff);
+      color: var(--text-light, #ffffff);
+    }
+
+    body {
+      overflow-x: hidden;
     }
 
     .nav {
@@ -44,135 +50,199 @@
     }
 
     .reviews-grid {
-      display: grid;  
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      margin-top: 60px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      padding: 40px 20px;
+      margin-top: 20px;
     }
 
-    .gym {
+    .card {
+      padding: 24px;
+      border-radius: 12px;
+      overflow: visible;
+      min-height: 400px;
+      min-width: 220px;
+      height: auto;
+      perspective: 1000px;
+    }  
+
+    .content {
+      width: 100%;
+      height: 600px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      transform-origin: center center;
+    }
+
+    .card:hover .content {
+      transform: rotateY(180deg);
+    }
+
+    .front, .back {
+      backface-visibility: hidden;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1rem;
+    }
+
+    .front {
       background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s;
+      z-index: 2;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
-    .gym:hover {
+    .back {
+      background: #2c3e50;
+      color: #ecf0f1;
+      transform: rotateY(180deg);
+      transform-origin: center center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .back-content {
+      text-align: center;
+    }
+    
+    .back-description {
+      font-size: 0.9rem;
+      margin: 0.5rem 0 1rem;
+      color: #bdc3c7;
+      line-height: 1.4;
+    }
+
+    .facilities-list {
+      margin-top: 1rem;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    .facility-item {
+      margin: 0.5rem 0;
+      color: #ecf0f1;
+      font-size: 0.9rem;
+    }
+
+    .gym-details {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .gym-details p {
+      margin: 0.5rem 0;
+      color: #bdc3c7;
+      font-size: 0.9rem;
+    }
+
+    .gym-name {
+      font-size: 1.2rem;
+      color: #ecf0f1;
+      margin: 1rem 0;
+      display: block;
+    }
+
+    .img {
+      max-height: 200px;
+      position: relative;
+      width: 100%;
+    }
+
+    .gym-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+    }
+
+    .gym-image:hover {
       transform: scale(1.05);
     }
 
-    .gym img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 15px;
+    .front-content {
+      text-align: center;
     }
 
-    .gym h3 {
-      margin: 15px 0 10px;
-      color: #004d4d;
-      font-size: 1.5rem;
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      font-size: 1.1rem;
+    }
+
+    .card-footer {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .badge {
+      background: linear-gradient(45deg, #004d4d, #006666);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.8em;
+    }
+
+    .login-prompt {
+      color: #bdc3c7;
+      margin-top: 15px;
+    }
+
+    .login-link {
+      color: #e74c3c;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+
+    .login-link:hover {
+      color: #c0392b;
+    }
+
+    .leave-review-button {
+      background: #e74c3c;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 15px;
+      transition: background 0.3s ease;
+    }
+
+    .leave-review-button:hover {
+      background: #c0392b;
     }
 
     .rating {
-      color: gold;
+      color: #ffd700;
       font-size: 1.2rem;
       margin: 10px 0;
     }
 
-    .gym p {
-      font-size: 16px;
-      color: #333;
-      line-height: 1.6;
-    }
-
-    .gym-details {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid #eee;
-    }
-
-    .gym-details p {
-      margin: 5px 0;
-    }
-
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 2rem 0;
-      padding: 1rem;
-    }
-
-    .pagination-link {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--primary-color);
-      border-radius: 4px;
-      color: var(--primary-color);
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-
-    .pagination-link:hover {
-      background-color: var(--primary-color);
-      color: white;
-    }
-
-    .pagination-current {
-      padding: 0.5rem 1rem;
-      background-color: var(--primary-color);
-      color: white;
-      border-radius: 4px;
-      font-weight: bold;
-    }
-
-    .review-form {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
-    }
-
-    .review-form textarea {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      resize: vertical;
-    }
-
-    .review-form button {
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    .review-form button:hover {
-      background: #006666;
-    }
-
-    .login-prompt {
-      text-align: center;
-      margin-top: 15px;
-      color: #666;
-    }
-
-    .login-prompt a {
-      color: var(--primary-color);
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .login-prompt a:hover {
-      text-decoration: underline;
+    @media screen and (max-width: 768px) {
+      .reviews-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+      }
+    
+      .card {
+        flex: 80%;
+        scroll-snap-align: center;
+      }
     }
   </style>
 </head>
@@ -216,87 +286,119 @@
   </header>
 
   <main>
-    <div class="container">
-      <h1>Gym Ratings & Reviews</h1>
+    <div class="container mt-4">
+      <h1>Gyms & Fitness Centers</h1>
       
       <div class="reviews-grid">
         {% for gym in gyms %}
-          <div class="gym">
-            {% if gym.image %}
-              <img src="{{ gym.image.url }}" alt="{{ gym.name }}">
-            {% else %}
-              <img src="{% static 'images/default-gym.jpg' %}" alt="{{ gym.name }}">
-            {% endif %}
-            <h3>{{ gym.name }}</h3>
-            <div class="rating">
-              {{ gym.stars_display }}
-              ({{ gym.rating }})
-            </div>
-            <p>{{ gym.description }}</p>
-            <div class="gym-details">
-              <p><strong>Equipment:</strong> {{ gym.equipment }}</p>
-              <p><strong>Classes:</strong> {{ gym.classes }}</p>
-              <p><strong>Opening Hours:</strong> {{ gym.opening_hours }}</p>
-              <p><strong>Trainers:</strong> {{ gym.trainers }}</p>
-              <p><strong>Address:</strong> {{ gym.address }}</p>
-              <p><strong>Phone:</strong> {{ gym.phone }}</p>
-              {% if gym.website %}
-              <p><strong>Website:</strong> <a href="{{ gym.website }}" target="_blank">Visit Website</a></p>
-              {% endif %}
-            </div>
-
-            {% if user.is_authenticated %}
-            <form action="{% url 'add_review' %}" method="post" class="review-form">
-              {% csrf_token %}
-              <input type="hidden" name="business_type" value="gym">
-              <input type="hidden" name="business_id" value="{{ gym.id }}">
-              <input type="hidden" name="next" value="{% url 'gym' %}">
-              <div class="rating-input">
-                <label>Your Rating:</label>
-                <select name="rating" required>
-                  <option value="1">1 Star</option>
-                  <option value="2">2 Stars</option>
-                  <option value="3">3 Stars</option>
-                  <option value="4">4 Stars</option>
-                  <option value="5">5 Stars</option>
-                </select>
+        <div class="card">
+          <div class="content">
+            <div class="back">
+              <div class="back-content">
+                {% if user.is_authenticated %}
+                  <div class="review-button-wrapper">
+                    <a href="{% url 'add_review' gym.id %}" class="leave-review-button">Leave a Review</a>
+                  </div>
+                {% else %}
+                  <p class="login-prompt">
+                    <a href="{% url 'signup' %}" class="login-link">Log in</a> to leave a review.
+                  </p>
+                {% endif %}
+                <strong class="gym-name">{{ gym.name }}</strong>
+                <p class="back-description">
+                  {{ gym.description|truncatechars:120 }}
+                </p>
+              
+                {% if gym.facilities %}
+                  <div class="facilities-list">
+                    <h4>Facilities & Equipment</h4>
+                    <div class="facility-item">{{ gym.facilities }}</div>
+                    <div class="gym-details">
+                      <p>Address: {{ gym.address }}</p>
+                      <p>Phone: {{ gym.phone }}</p>
+                      <p>Opening Hours: {{ gym.opening_hours }}</p>
+                    </div>
+                  </div>
+                {% endif %}
               </div>
-              <textarea name="comment" placeholder="Write your review..." required></textarea>
-              <button type="submit">Submit Review</button>
-            </form>
-            {% else %}
-            <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
-            {% endif %}
+            </div>
+            <div class="front">
+              <div class="img">
+                {% if gym.image %}
+                  <img src="{{ gym.image.url }}" alt="{{ gym.name }}" class="gym-image">
+                {% else %}
+                  <img src="{% static 'pictures/gym befit.jpg' %}" alt="{{ gym.name }}" class="gym-image">
+                {% endif %}
+              </div>
+              <div class="front-content">
+                <small class="badge">Fitness Center</small>
+                <div class="description">
+                  <div class="title">
+                    <p class="title"><strong>{{ gym.name }}</strong></p>
+                    <svg fill-rule="nonzero" height="15px" width="15px" viewBox="0,0,256,256" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+                      <g style="mix-blend-mode: normal" text-anchor="none" font-size="none" font-weight="none" font-family="none" stroke-dashoffset="0" stroke-dasharray="" stroke-miterlimit="10" stroke-linejoin="miter" stroke-linecap="butt" stroke-width="1" stroke="none" fill-rule="nonzero" fill="#20c997">
+                        <g transform="scale(8,8)">
+                          <path d="M25,27l-9,-6.75l-9,6.75v-23h18z"></path>
+                        </g>
+                      </g>
+                    </svg>
+                  </div>
+                  <div class="rating">
+                    {% if gym.rating %}
+                      {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= gym.rating %}
+                          ★
+                        {% else %}
+                          ☆
+                        {% endif %}
+                      {% endfor %}
+                      ({{ gym.review_count }} reviews)
+                    {% else %}
+                      <span>No reviews yet</span>
+                    {% endif %}
+                  </div>
+                  <p class="card-footer">
+                    {{ gym.opening_hours }}
+                  </p>
+                  <p class="card-footer">
+                    {{ gym.address }}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
         {% empty %}
-          <p class="no-gyms">No gyms available at the moment.</p>
+        <p class="no-gyms">No gyms available at the moment.</p>
         {% endfor %}
       </div>
-
-      {% if gyms.has_other_pages %}
-      <div class="pagination">
-        {% if gyms.has_previous %}
-          <a href="?page={{ gyms.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
-        {% endif %}
-        
-        {% for num in gyms.paginator.page_range %}
-          {% if gyms.number == num %}
-            <span class="pagination-current">{{ num }}</span>
-          {% else %}
-            <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
-          {% endif %}
-        {% endfor %}
-        
-        {% if gyms.has_next %}
-          <a href="?page={{ gyms.next_page_number }}" class="pagination-link">Next &raquo;</a>
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
   </main>
+
+  {% if gyms.has_other_pages %}
+  <div class="pagination">
+    {% if gyms.has_previous %}
+      <a href="?page={{ gyms.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
+    {% endif %}
+    
+    {% for num in gyms.paginator.page_range %}
+      {% if gyms.number == num %}
+        <span class="pagination-current">{{ num }}</span>
+      {% else %}
+        <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    
+    {% if gyms.has_next %}
+      <a href="?page={{ gyms.next_page_number }}" class="pagination-link">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
 
   <footer>
     <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
   </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

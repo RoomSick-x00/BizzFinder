@@ -22,6 +22,10 @@
       background-color: var(--primary-color);
     }
 
+    body {
+      overflow-x: hidden;
+    }
+
     .nav {
       display: flex;
       list-style: none;
@@ -44,135 +48,160 @@
     }
 
     .reviews-grid {
-      display: grid;  
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      margin-top: 60px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      padding: 40px 20px;
+      margin-top: 20px;
     }
 
-    .retail {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s;
-    }
+    .card {
+      padding: 24px;
+      border-radius: 12px;
+      overflow: visible;
+      min-height: 400px;
+      min-width: 220px;
+      height: auto;
+      perspective: 1000px;
+    }  
 
-    .retail:hover {
-      transform: scale(1.05);
-    }
-
-    .retail img {
+    .content {
       width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 10px;
-      margin-bottom: 15px;
+      height: 600px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      transform-origin: center center;
     }
 
-    .retail h3 {
-      margin: 15px 0 10px;
-      color: #004d4d;
-      font-size: 1.5rem;
+    .card:hover .content {
+      transform: rotateY(180deg);
     }
 
-    .rating {
-      color: gold;
-      font-size: 1.2rem;
-      margin: 10px 0;
-    }
-
-    .retail p {
-      font-size: 16px;
-      color: #333;
-      line-height: 1.6;
-    }
-
-    .retail-details {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid #eee;
-    }
-
-    .retail-details p {
-      margin: 5px 0;
-    }
-
-    .pagination {
+    .front, .back {
+      backface-visibility: hidden;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      gap: 0.5rem;
-      margin: 2rem 0;
+      justify-content: flex-start;
       padding: 1rem;
     }
 
-    .pagination-link {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--primary-color);
-      border-radius: 4px;
-      color: var(--primary-color);
-      text-decoration: none;
-      transition: all 0.3s ease;
+    .front {
+      background: #fff;
+      z-index: 2;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
-    .pagination-link:hover {
-      background-color: var(--primary-color);
-      color: white;
+    .back {
+      background: #2c3e50;
+      color: #ecf0f1;
+      transform: rotateY(180deg);
+      transform-origin: center center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
-    .pagination-current {
-      padding: 0.5rem 1rem;
-      background-color: var(--primary-color);
-      color: white;
-      border-radius: 4px;
-      font-weight: bold;
+    .back-content {
+      text-align: center;
     }
 
-    .review-form {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #eee;
+    .back-description {
+      font-size: 0.9rem;
+      margin: 0.5rem 0 1rem;
+      color: #bdc3c7;
+      line-height: 1.4;
     }
 
-    .review-form textarea {
+    .img {
+      max-height: 200px;
+      position: relative;
       width: 100%;
-      padding: 10px;
+    }
+
+    .store-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+    }
+
+    .store-image:hover {
+      transform: scale(1.05);
+    }
+
+    .front-content {
+      text-align: center;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      font-size: 1.1rem;
+    }
+
+    .rating {
+      color: #ffd700;
       margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      resize: vertical;
     }
 
-    .review-form button {
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.3s;
+    .store-badge {
+      background: rgba(255, 165, 0, 0.2);
+      color: orange;
+      padding: 5px 15px;
+      border-radius: 20px;
+      margin: 10px 0;
+      display: inline-block;
     }
 
-    .review-form button:hover {
-      background: #006666;
+    .leave-review-button {
+      background: #e74c3c;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 15px;
+      transition: background 0.3s ease;
+    }
+
+    .leave-review-button:hover {
+      background: #c0392b;
     }
 
     .login-prompt {
-      text-align: center;
+      color: #bdc3c7;
       margin-top: 15px;
-      color: #666;
     }
 
-    .login-prompt a {
-      color: var(--primary-color);
+    .login-link {
+      color: #e74c3c;
       text-decoration: none;
       font-weight: bold;
+      transition: color 0.3s ease;
     }
 
-    .login-prompt a:hover {
-      text-decoration: underline;
+    .login-link:hover {
+      color: #c0392b;
+    }
+
+    @media screen and (max-width: 768px) {
+      .reviews-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+      }
+    
+      .card {
+        flex: 80%;
+        scroll-snap-align: center;
+      }
     }
   </style>
 </head>
@@ -216,86 +245,75 @@
   </header>
 
   <main>
-    <div class="container">
+    <div class="container mt-4">
       <h1>Retail Store Ratings & Reviews</h1>
       
       <div class="reviews-grid">
         {% for store in stores %}
-          <div class="retail">
-            {% if store.image %}
-              <img src="{{ store.image.url }}" alt="{{ store.name }}">
-            {% else %}
-              <img src="{% static 'images/default-retail.jpg' %}" alt="{{ store.name }}">
-            {% endif %}
-            <h3>{{ store.name }}</h3>
-            <div class="rating">
-              {{ store.stars_display }}
-              ({{ store.rating }})
-            </div>
-            <p>{{ store.description }}</p>
-            <div class="retail-details">
-              <p><strong>Store Type:</strong> {{ store.store_type }}</p>
-              <p><strong>Categories:</strong> {{ store.categories }}</p>
-              <p><strong>Opening Hours:</strong> {{ store.opening_hours }}</p>
-              <p><strong>Payment Methods:</strong> {{ store.payment_methods }}</p>
-              <p><strong>Address:</strong> {{ store.address }}</p>
-              <p><strong>Phone:</strong> {{ store.phone }}</p>
-              {% if store.website %}
-              <p><strong>Website:</strong> <a href="{{ store.website }}" target="_blank">Visit Website</a></p>
-              {% endif %}
-            </div>
-
-            {% if user.is_authenticated %}
-            <form action="{% url 'add_review' %}" method="post" class="review-form">
-              {% csrf_token %}
-              <input type="hidden" name="business_type" value="retail">
-              <input type="hidden" name="business_id" value="{{ store.id }}">
-              <input type="hidden" name="next" value="{% url 'retail' %}">
-              <div class="rating-input">
-                <label>Your Rating:</label>
-                <select name="rating" required>
-                  <option value="1">1 Star</option>
-                  <option value="2">2 Stars</option>
-                  <option value="3">3 Stars</option>
-                  <option value="4">4 Stars</option>
-                  <option value="5">5 Stars</option>
-                </select>
+        <div class="card">
+          <div class="content">
+            <div class="front">
+              <div class="img">
+                {% if store.image %}
+                  <img src="{{ store.image.url }}" alt="{{ store.name }}" class="store-image">
+                {% else %}
+                  <img src="{% static 'pictures/retail store.jpg' %}" alt="{{ store.name }}" class="store-image">
+                {% endif %}
               </div>
-              <textarea name="comment" placeholder="Write your review..." required></textarea>
-              <button type="submit">Submit Review</button>
-            </form>
-            {% else %}
-            <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
-            {% endif %}
+              <div class="front-content">
+                <div class="title">
+                  <p class="title"><strong>{{ store.name }}</strong></p>
+                  <div class="store-badge">{{ store.store_type }}</div>
+                </div>
+                <div class="rating">
+                  {% if store.rating %}
+                    {% for i in "12345"|make_list %}
+                      {% if forloop.counter <= store.rating %}
+                        ★
+                      {% else %}
+                        ☆
+                      {% endif %}
+                    {% endfor %}
+                    ({{ store.review_count }} reviews)
+                  {% else %}
+                    <span>No reviews yet</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="back">
+              <div class="back-content">
+                {% if user.is_authenticated %}
+                  <div class="review-button-wrapper">
+                    <a href="{% url 'add_review' store.id %}" class="leave-review-button">Leave a Review</a>
+                  </div>
+                {% else %}
+                  <p class="login-prompt">
+                    <a href="{% url 'signup' %}" class="login-link">Log in</a> to leave a review.
+                  </p>
+                {% endif %}
+                <h4>{{ store.name }}</h4>
+                <p class="back-description">{{ store.description|default:"" }}</p>
+                <div class="store-info">
+                  <p>Hours: {{ store.operating_hours }}</p>
+                  <p>Payment: {{ store.payment_methods }}</p>
+                  <p>Address: {{ store.address }}</p>
+                  {% if store.special_offers %}
+                    <p>Special Offers: {{ store.special_offers }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
         {% empty %}
-          <p class="no-stores">No retail stores available at the moment.</p>
+        <p class="no-stores">No retail stores available at the moment.</p>
         {% endfor %}
       </div>
-
-      {% if stores.has_other_pages %}
-      <div class="pagination">
-        {% if stores.has_previous %}
-          <a href="?page={{ stores.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
-        {% endif %}
-        
-        {% for num in stores.paginator.page_range %}
-          {% if stores.number == num %}
-            <span class="pagination-current">{{ num }}</span>
-          {% else %}
-            <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
-          {% endif %}
-        {% endfor %}
-        
-        {% if stores.has_next %}
-          <a href="?page={{ stores.next_page_number }}" class="pagination-link">Next &raquo;</a>
-        {% endif %}
-      </div>
-      {% endif %}
     </div>
   </main>
 
-  <footer>
+  <footer class="footer mt-5 py-3 bg-light text-center">
     <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
   </footer>
 </body>

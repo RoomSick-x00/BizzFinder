@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
-from .models import CustomUser
+from .models import CustomUser, Vendor
 
 class CustomLoginForm(AuthenticationForm):
     username = forms.CharField(label="Username/Email/Phone", required=True)
@@ -71,3 +71,29 @@ class CustomProfileEditForm(forms.ModelForm):
         if self.instance and self.instance.username:
             return self.instance.username
         return self.cleaned_data.get('username')
+
+class VendorSignupForm(UserCreationForm):
+    business_name = forms.CharField(max_length=100)
+    business_address = forms.CharField(widget=forms.Textarea)
+    business_category = forms.ChoiceField(choices=[
+        ('restaurant', 'Restaurant'),
+        ('retail', 'Retail Store'),
+        ('gym', 'Gym'),
+        ('hospital', 'Hospital'),
+        ('hotel', 'Hotel')
+    ])
+    phone_number = forms.CharField(max_length=15)
+    email = forms.EmailField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'email', 'password1', 'password2', 'business_name', 
+                 'business_address', 'business_category', 'phone_number')
+
+class VendorProfileForm(forms.ModelForm):
+    class Meta:
+        model = Vendor
+        fields = ['business_name', 'business_address', 'business_category']
+        widgets = {
+            'business_address': forms.Textarea(attrs={'rows': 3}),
+        }

@@ -1,4 +1,5 @@
 {%load static%}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,8 +22,14 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: var(--primary-color);
+      background-color: var(--primary-color, #007bff);
+      color: var(--text-light, #ffffff);
     }
+
+    body {
+      overflow-x: hidden;
+    }
+    
 
     .nav {
       display: flex;
@@ -48,10 +55,10 @@
     /* Grid Layout for Restaurant Reviews */
     .reviews-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px;
-      margin-top: 60px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      padding: 40px 20px;
+      margin-top: 20px;
     }
     .restaurant {
       background: #fff;
@@ -99,14 +106,14 @@
       border-top: 1px solid #eee;
     }
     .menu-item {
+      background: rgba(236, 240, 241, 0.1);
+      padding: 12px;
+      border-radius: 8px;
       margin: 10px 0;
-      padding: 10px;
-      background: #f9f9f9;
-      border-radius: 4px;
     }
     .menu-item-name {
+      color: #e74c3c;
       font-weight: bold;
-      color: #333;
     }
     .menu-item-price {
       color: #2ecc71;
@@ -116,18 +123,26 @@
       margin-top: 5px;
     }
     .menu-item-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      margin-right: 5px;
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: rgba(236, 240, 241, 0.15);
+      color: #ecf0f1;
+      padding: 4px 8px;
       border-radius: 12px;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+      display: inline-block;
+      margin: 4px;
     }
     .login-prompt {
-      text-align: center;
+      color: #bdc3c7;
       margin-top: 15px;
-      color: #666;
+    }
+    .login-link {
+      color: #e74c3c;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+    .login-link:hover {
+      color: #c0392b;
     }
     .pagination {
       display: flex;
@@ -146,16 +161,212 @@
       transition: all 0.3s ease;
     }
     .pagination-link:hover {
-      background-color: var(--primary-color);
-      color: white;
+      background-color: var(--primary-color, #007bff);
+      color: var(--text-light, #ffffff);
+
     }
     .pagination-current {
       padding: 0.5rem 1rem;
-      background-color: var(--primary-color);
-      color: white;
+      background-color: var(--primary-color, #007bff);
+      color: var(--text-light, #ffffff);
       border-radius: 4px;
       font-weight: bold;
     }
+
+    /* New 3D Card Styles */
+    /* From Uiverse.io by ElSombrero2 */
+    .card {
+      padding: 24px;
+      border-radius: 12px;
+      {% comment %} box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1); {% endcomment %}
+      overflow: visible;
+      min-height: 400px;
+      min-width: 220px;
+      height: auto;
+      perspective: 1000px;
+    }  
+    .content {
+      width: 100%;
+      height: 600px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      transform-origin: center center;
+    }
+
+    .card:hover .content {
+      transform: rotateY(180deg);
+    }
+
+    .front, .back {
+      backface-visibility: hidden;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1rem;
+    }
+
+    .front {
+      background: #fff;
+      z-index: 2;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .back {
+      background: #2c3e50;
+      color: #ecf0f1;
+      transform: rotateY(180deg);
+      transform-origin: center center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .back-content {
+      text-align: center;
+    }
+    
+    .back-description {
+      font-size: 0.9rem;
+      margin: 0.5rem 0 1rem;
+      color: #bdc3c7;
+      line-height: 1.4;
+    }
+    
+    .popular-item h4 {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+      color: #fff;
+    }
+
+    .img {
+      max-height: 200px;
+      position: relative;
+      width: 100%;
+    }
+    
+
+    .restaurant-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+    }
+
+    .restaurant-image:hover {
+      transform: scale(1.05);
+    }
+    .front-content {
+      text-align: center;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      font-size: 1.1rem;
+    }
+
+    .card-footer {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    @media screen and (max-width: 768px) {
+      .reviews-grid {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+      }
+    
+      .card {
+        flex: 80%;
+        scroll-snap-align: center;
+      }
+    }
+
+    .reviews-preview {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .review-preview {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.8rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .review-label {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .review-rating {
+      color: #ffd700;
+      font-size: 0.8rem;
+    }
+
+    .review-comment {
+      color: #666;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin: 0.5rem 0;
+    }
+
+    .review-author {
+      color: #888;
+      font-style: italic;
+    }
+
+    .top-review {
+      border-left: 3px solid #28a745;
+    }
+
+    .least-review {
+      border-left: 3px solid #dc3545;
+    }
+
+    /* Adjust card height for reviews */
+    .card {
+      height: auto;
+      min-height: 340px;
+    }
+
+    .leave-review-button {
+      background: #e74c3c;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 4px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 15px;
+      transition: background 0.3s ease;
+    }
+
+    .leave-review-button:hover {
+      background: #c0392b;
+    }
+
   </style>
 </head>
 <body>
@@ -178,7 +389,7 @@
           <li class="profile-dropdown">
             <a href="#" class="profile-trigger">
               {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="nav-profile-pic">
+                <img src="{{ user.profile_picture.url }}" loading="lazy" alt="Profile Picture" class="nav-profile-pic">
               {% endif %}
               {{ user.username }}
             </a>
@@ -199,80 +410,132 @@
 
   <!-- Main Content Area -->
   <main>
-    <div class="container">
+    <div class="container mt-4">
       <h1>Restaurant Ratings & Reviews</h1>
-      
-      <div class="reviews-grid">
-        {% for restaurant in restaurants %}
-        <div class="restaurant">
-          {% if restaurant.image %}
-            <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}">
-          {% else %}
-            <img src="{% static 'images/default-restaurant.jpg' %}" alt="{{ restaurant.name }}">
-          {% endif %}
-          <h3>{{ restaurant.name }}</h3>
-          <div class="rating">
-            {{ restaurant.stars_display }}
-            ({{ restaurant.rating }})
-          </div>
-          <p>{{ restaurant.description }}</p>
-          <div class="restaurant-details">
-            <p><strong>Cuisine:</strong> {{ restaurant.cuisine_type }}</p>
-            <p><strong>Price Range:</strong> {{ restaurant.get_price_range_display }}</p>
-            <p><strong>Opening Hours:</strong> {{ restaurant.opening_hours }}</p>
-            <p><strong>Address:</strong> {{ restaurant.address }}</p>
-            <p><strong>Phone:</strong> {{ restaurant.phone }}</p>
-            {% if restaurant.website %}
-            <p><strong>Website:</strong> <a href="{{ restaurant.website }}" target="_blank">Visit Website</a></p>
-            {% endif %}
-          </div>
+      <!-- From Uiverse.io by ElSombrero2 -->
+        
+        <div class="reviews-grid">
+          {% for restaurant in restaurants %}
+          <div class="card">
+            <div class="content">
+              <div class="back">
+                <div class="back-content">
+                  <strong class="restaurant-name">{{ restaurant.name }}</strong>
+                  <p class="back-description">
+                    {{ restaurant.description|truncatechars:120 }}
+                  </p>
+              
+                  {% if restaurant.menu_items %}
+                    <div class="popular-item">
+                      <h4>Most Popular Item</h4>
+                      <div class="menu-item">
+                        <div class="menu-item-name">{{ restaurant.menu_items.0.name }}</div>
+                        <div class="menu-item-price">${{ restaurant.menu_items.0.price }}</div>
+                        {% if restaurant.menu_items.0.tags %}
+                          <div class="menu-item-tags">
+                            {% for tag in restaurant.menu_items.0.tags %}
+                              <span class="menu-item-tag">{{ tag }}</span>
+                            {% endfor %}
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
 
-          {% if restaurant.menu_items.all %}
-          <div class="menu-items">
-            <h4>Popular Menu Items</h4>
-            {% for item in restaurant.menu_items.all|slice:":3" %}
-            <div class="menu-item">
-              <div class="menu-item-name">{{ item.name }}</div>
-              <div class="menu-item-price">₹{{ item.price }}</div>
-              {% if item.description %}
-              <p>{{ item.description }}</p>
-              {% endif %}
-              <div class="menu-item-tags">
-                {% if item.is_vegetarian %}<span class="menu-item-tag">Vegetarian</span>{% endif %}
-                {% if item.is_vegan %}<span class="menu-item-tag">Vegan</span>{% endif %}
-                {% if item.is_gluten_free %}<span class="menu-item-tag">Gluten-Free</span>{% endif %}
+                  {% if user.is_authenticated %}
+                    <div class="review-button-wrapper">
+                      <a href="{% url 'add_review' restaurant.id %}" class="leave-review-button">Leave a Review</a>
+                    </div>
+                  {% else %}
+                    <p class="login-prompt">
+                      <a href="{% url 'signup' %}" class="login-link">Log in</a> to leave a review.
+                    </p>
+                  {% endif %} 
+
+                </div>
+              </div>
+              <div class="front">
+                <div class="img">
+                  {% if restaurant.image %}
+                    <img src="{{ restaurant.image.url }}" alt="{{ restaurant.name }}" class="restaurant-image">
+                  {% else %}
+                    <img src="{% static 'pictures/restaurant.jpg' %}" alt="{{ restaurant.name }}" class="restaurant-image">
+                  {% endif %}
+                </div>
+                <div class="front-content">
+                  <small class="badge">{{ restaurant.cuisine_type }}</small>
+                  <div class="description">
+                    <div class="title">
+                      <p class="title"><strong>{{ restaurant.name }}</strong></p>
+                      <svg aria-hidden="true" fill="#20c997" height="15px" width="15px" viewBox="0 0 256 256">
+                        <path d="M25,27l-9,-6.75l-9,6.75v-23h18z"></path>
+                      </svg>
+                    </div>
+                    <div class="rating">
+                      {% if restaurant.rating %}
+                        {% for i in "12345"|make_list %}
+                          {% if forloop.counter <= restaurant.rating %}
+                            ★
+                          {% else %}
+                            ☆
+                          {% endif %}
+                        {% endfor %}
+                        ({{ restaurant.review_count }} reviews)
+                      {% else %}
+                        <span>No reviews yet</span>
+                      {% endif %}
+                    </div>  
+
+                    {% if restaurant.top_review or restaurant.least_review %}
+                    <div class="reviews-preview">
+                        {% if restaurant.top_review %}
+                        <div class="review-preview top-review">
+                            <div class="review-header">
+                                <span class="review-label">Top Review</span>
+                                <span class="review-rating">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= restaurant.top_review.rating %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                            </div>
+                            <p class="review-comment">{{ restaurant.top_review.comment|truncatechars:100 }}</p>
+                            <small class="review-author">- {{ restaurant.top_review.user.username }}</small>
+                        </div>
+                        {% endif %}
+
+                        {% if restaurant.least_review and restaurant.least_review != restaurant.top_review %}
+                        <div class="review-preview least-review">
+                            <div class="review-header">
+                                <span class="review-label">Critical Review</span>
+                                <span class="review-rating">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= restaurant.least_review.rating %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                </span>
+                            </div>
+                            <p class="review-comment">{{ restaurant.least_review.comment|truncatechars:100 }}</p>
+                            <small class="review-author">- {{ restaurant.least_review.user.username }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
               </div>
             </div>
-            {% endfor %}
           </div>
-          {% endif %}
-
-          {% if user.is_authenticated %}
-          <form action="{% url 'add_review' %}" method="post" class="review-form">
-            {% csrf_token %}
-            <input type="hidden" name="business_type" value="restaurant">
-            <input type="hidden" name="business_id" value="{{ restaurant.id }}">
-            <input type="hidden" name="next" value="{% url 'restaurant' %}">
-            <div class="rating-input">
-              <label>Your Rating:</label>
-              <select name="rating" required>
-                <option value="1">1 Star</option>
-                <option value="2">2 Stars</option>
-                <option value="3">3 Stars</option>
-                <option value="4">4 Stars</option>
-                <option value="5">5 Stars</option>
-              </select>
-            </div>
-            <textarea name="comment" placeholder="Write your review..." required></textarea>
-            <button type="submit">Submit Review</button>
-          </form>
-          {% else %}
-          <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to leave a review.</p>
-          {% endif %}
+          {% empty %}
+          <p class="no-restaurants">No restaurants available at the moment.</p>
+          {% endfor %}
         </div>
-        {% empty %}
-        <p class="no-restaurants">No restaurants available at the moment.</p>
-        {% endfor %}
       </div>
     </div>
   </main>
@@ -298,7 +561,7 @@
   {% endif %}
 
   <!-- Footer (styled in common.css) -->
-  <footer>
+  <footer class="footer mt-5 py-3 bg-light text-center">
     <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
   </footer>
 </body>

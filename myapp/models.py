@@ -1,9 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.conf import settings
 
 
 class CustomUser(AbstractUser):
+    USER_TYPE_CHOICES = [
+        ('user', 'User'),
+        ('vendor', 'Vendor'),
+    ]
+    user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='user')
     phone_number = models.CharField(max_length=15, unique=True)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
@@ -28,8 +37,10 @@ class Restaurant(models.Model):
     rating = models.DecimalField(
         max_digits=3, 
         decimal_places=1,
-        validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
-        default=0
+        validators=[MaxValueValidator(5.0)],
+        default=0,
+        null=True,
+        blank=True
     )
     review_count = models.PositiveIntegerField(default=0)
 
@@ -62,31 +73,62 @@ class Restaurant(models.Model):
 
 # ✅ Review Model
 class Review(models.Model):
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews')
-    author_name = models.CharField(max_length=100)
+    BUSINESS_TYPES = [
+        ('restaurant', 'Restaurant'),
+        ('hotel', 'Hotel'),
+        ('gym', 'Gym'),
+        ('hospital', 'Hospital'),
+        ('retail', 'Retail Store'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    business_type = models.CharField(max_length=20, choices=BUSINESS_TYPES, null=True, blank=True)
+    business_id = models.IntegerField(null=True, blank=True)
+    rating = models.IntegerField(validators=[MaxValueValidator(5)])
     comment = models.TextField()
-    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Review by {self.author_name} for {self.restaurant.name}"
+        return f"Review by {self.user.username} for {self.business_type} #{self.business_id}"
 
     def save(self, *args, **kwargs):
-        """Override save method to update restaurant rating."""
+        """Override save method to update business rating."""
         is_new = self.pk is None
         super().save(*args, **kwargs)
 
-        restaurant = self.restaurant
-        reviews = restaurant.reviews.all()
-        restaurant.review_count = reviews.count()
+        if self.business_type and self.business_id:
+            # Get the business model based on business_type
+            business_model = None
+            if self.business_type == 'restaurant':
+                business_model = Restaurant
+            elif self.business_type == 'hotel':
+                business_model = Hotel
+            elif self.business_type == 'gym':
+                business_model = Gym
+            elif self.business_type == 'hospital':
+                business_model = Hospital
+            elif self.business_type == 'retail':
+                business_model = RetailStore
 
-        if restaurant.review_count > 0:
-            total_rating = sum(review.rating for review in reviews)
-            restaurant.rating = total_rating / restaurant.review_count
-        else:
-            restaurant.rating = None  # Set to None if no reviews
-
-        restaurant.save()
+            if business_model:
+                try:
+                    business = business_model.objects.get(id=self.business_id)
+                    reviews = Review.objects.filter(
+                        business_type=self.business_type,
+                        business_id=self.business_id
+                    )
+                    
+                    # Update review count and average rating
+                    business.review_count = reviews.count()
+                    if business.review_count > 0:
+                        avg_rating = reviews.aggregate(models.Avg('rating'))['rating__avg']
+                        business.rating = round(avg_rating, 1)
+                    else:
+                        business.rating = 0
+                    
+                    business.save()
+                except business_model.DoesNotExist:
+                    pass  # Handle the case where business doesn't exist
 
 
 # ✅ Menu Item Model
@@ -116,14 +158,16 @@ class MenuItem(models.Model):
 class Hotel(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(max_length=500)
-    image_url = models.CharField(max_length=200)  
+    image = models.ImageField(upload_to='hotels/', blank=True, null=True)
     rating = models.DecimalField(
         max_digits=3,
         decimal_places=1,
-        validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
-        default=0
+        validators=[MaxValueValidator(5.0)],
+        default=0,
+        null=True,
+        blank=True
     )
-    review = models.TextField(max_length=500)
+    review = models.TextField(max_length=500, blank=True, null=True)
     price_range = models.CharField(max_length=10, choices=Restaurant.PRICE_CHOICES, default='$$')
     address = models.CharField(max_length=200)
     phone = models.CharField(max_length=20)
@@ -143,8 +187,13 @@ class Hotel(models.Model):
 
 class RetailStore(models.Model):
     name = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='retail_stores/')
-    rating = models.FloatField(default=0.0)
+    image = models.ImageField(upload_to='retail_stores/', blank=True, null=True)
+    rating = models.FloatField(
+        default=0.0,
+        validators=[MaxValueValidator(5.0)],
+        null=True,
+        blank=True
+    )
     review = models.TextField(blank=True)
     store_type = models.CharField(max_length=50, help_text="e.g., General Store, Electronics, Fashion, etc.")
     operating_hours = models.CharField(max_length=100, help_text="e.g., '9:00 AM - 10:00 PM'")
@@ -173,8 +222,10 @@ class Gym(models.Model):
     rating = models.DecimalField(
         max_digits=3,
         decimal_places=1,
-        validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
-        default=0
+        validators=[MaxValueValidator(5.0)],
+        default=0,
+        null=True,
+        blank=True
     )
     review_count = models.PositiveIntegerField(default=0)
     price_range = models.CharField(max_length=10, choices=Restaurant.PRICE_CHOICES, default='$$')
@@ -197,8 +248,10 @@ class Hospital(models.Model):
     rating = models.DecimalField(
         max_digits=3,
         decimal_places=1,
-        validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
-        default=0
+        validators=[MaxValueValidator(5.0)],
+        default=0,
+        null=True,
+        blank=True
     )
     review_count = models.PositiveIntegerField(default=0)
     specialties = models.TextField(blank=True)
@@ -232,3 +285,59 @@ class Category(models.Model):
 
     class Meta:
         verbose_name_plural = "Categories"
+
+
+class Vendor(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='vendor')
+    business_name = models.CharField(max_length=100)
+    business_address = models.TextField()
+    business_category = models.CharField(max_length=50, choices=[
+        ('restaurant', 'Restaurant'),
+        ('retail', 'Retail Store'),
+        ('gym', 'Gym'),
+        ('hospital', 'Hospital'),
+        ('hotel', 'Hotel')
+    ])
+    phone_number = models.CharField(max_length=15)
+    total_views = models.IntegerField(default=0)
+    total_reviews = models.IntegerField(default=0)
+    average_rating = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.business_name
+
+    def update_stats(self):
+        self.total_reviews = self.vendor_reviews.count()
+        if self.total_reviews > 0:
+            self.average_rating = self.vendor_reviews.aggregate(models.Avg('rating'))['rating__avg']
+        else:
+            self.average_rating = 0.0
+        self.save()
+
+
+class VendorReview(models.Model):
+    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='vendor_reviews')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], validators=[MaxValueValidator(5)])
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Vendor Review'
+        verbose_name_plural = 'Vendor Reviews'
+
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.vendor.business_name}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.vendor.update_stats()
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_vendor_profile(sender, instance, created, **kwargs):
+    if created and hasattr(instance, 'user_type') and instance.user_type == 'vendor':
+        Vendor.objects.create(user=instance)

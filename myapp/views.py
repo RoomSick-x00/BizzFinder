@@ -71,27 +71,22 @@ def categories(request):
 
 def newrestaurant(request):
     try:
-        print("\n=== Debug Information ===")
-        print("User authenticated:", request.user.is_authenticated)
-        print("Current user:", request.user)
+        restaurants = Restaurant.objects.all().order_by('-created_at')
+        total_count = restaurants.count()
         
-        # Get all restaurants and force evaluation
-        restaurants = list(Restaurant.objects.all())
-        total_count = len(restaurants)
-        print(f"\nRestaurants in database: {total_count}")
+        # For each restaurant, get its top and least rated reviews
+        for restaurant in restaurants:
+            reviews = Review.objects.filter(
+                business_type='restaurant',
+                business_id=restaurant.id
+            ).order_by('-rating', '-created_at')  # First sort by rating, then by date
+            
+            # Get top rated review
+            restaurant.top_review = reviews.first()
+            
+            # Get least rated review
+            restaurant.least_review = reviews.order_by('rating', '-created_at').first()
         
-        if total_count > 0:
-            for rest in restaurants:
-                print(f"""
-Restaurant:
-- ID: {rest.id}
-- Name: {rest.name}
-- Description: {rest.description[:50]}...
-- Rating: {rest.rating}
-- Image: {bool(rest.image)}
-""")
-        
-        # Pagination
         paginator = Paginator(restaurants, 12)
         page = request.GET.get('page', 1)
         try:
@@ -105,29 +100,20 @@ Restaurant:
             'restaurants': paginated_restaurants,
             'total_count': total_count,
             'is_authenticated': request.user.is_authenticated,
-            'current_user': str(request.user),
+            'current_user': request.user.phone_number if request.user.is_authenticated else "Guest",
         }
-        
-        print("\nContext being sent to template:", context)
-        print("=== End Debug Information ===\n")
         
         return render(request, 'newrestaurant.html', context)
     except Exception as e:
-        import traceback
-        print("\n=== Error Information ===")
-        print(f"Error type: {type(e)}")
-        print(f"Error message: {str(e)}")
-        print("Traceback:")
-        print(traceback.format_exc())
-        print("=== End Error Information ===\n")
-        
+        print(f"Error in restaurant view: {str(e)}")  # For debugging
         return render(request, 'newrestaurant.html', {
             'restaurants': [],
             'total_count': 0,
             'error': str(e),
             'is_authenticated': request.user.is_authenticated,
-            'current_user': str(request.user),
+            'current_user': request.user.phone_number if request.user.is_authenticated else "Guest",
         })
+
 
 def hotel(request):
     try:
@@ -147,7 +133,7 @@ def hotel(request):
 
 def newgym(request):
     try:
-        gyms = Gym.objects.annotate(avg_rating=Avg('review__rating')).order_by('-avg_rating')
+        gyms = Gym.objects.all().order_by('-rating')
         paginator = Paginator(gyms, 12)
         page = request.GET.get('page')
         try:
@@ -163,7 +149,7 @@ def newgym(request):
 
 def newhospital(request):
     try:
-        hospitals = Hospital.objects.annotate(avg_rating=Avg('review__rating')).order_by('-avg_rating')
+        hospitals = Hospital.objects.all().order_by('-rating')
         paginator = Paginator(hospitals, 12)
         page = request.GET.get('page')
         try:
@@ -179,17 +165,23 @@ def newhospital(request):
 
 def newretail(request):
     try:
-        stores = RetailStore.objects.annotate(avg_rating=Avg('review__rating')).order_by('-avg_rating')
-        paginator = Paginator(stores, 12)
-        page = request.GET.get('page')
-        try:
-            stores = paginator.page(page)
-        except PageNotAnInteger:
-            stores = paginator.page(1)
-        except EmptyPage:
-            stores = paginator.page(paginator.num_pages)
+        # Create a test store if none exist
+        if RetailStore.objects.count() == 0:
+            test_store = RetailStore.objects.create(
+                name='Test Store',
+                store_type='General Store',
+                operating_hours='9 AM - 9 PM',
+                payment_methods='Cash, Card',
+                address='123 Test Street'
+            )
+            print(f"Debug - Created test store: {test_store.name}")
+        
+        # Get all stores
+        stores = RetailStore.objects.all()
+        print(f"Debug - All stores: {[{'name': store.name, 'rating': store.rating} for store in stores]}")
         return render(request, 'newretail.html', {'stores': stores})
     except Exception as e:
+        print(f"Debug - Error in newretail view: {str(e)}")
         messages.error(request, 'Error loading retail stores. Please try again.')
         return render(request, 'newretail.html', {'stores': []})
 
@@ -217,35 +209,73 @@ def contactus(request):
     return render(request, 'contactus.html')
 
 @login_required
-def add_review(request):
+def add_review(request, business_id=None):
+    # First, try to find the business and its type
+    business = None
+    business_type = None
+    
+    # Check each business type
+    if Restaurant.objects.filter(id=business_id).exists():
+        business = Restaurant.objects.get(id=business_id)
+        business_type = 'restaurant'
+    elif Hotel.objects.filter(id=business_id).exists():
+        business = Hotel.objects.get(id=business_id)
+        business_type = 'hotel'
+    elif Gym.objects.filter(id=business_id).exists():
+        business = Gym.objects.get(id=business_id)
+        business_type = 'gym'
+    elif Hospital.objects.filter(id=business_id).exists():
+        business = Hospital.objects.get(id=business_id)
+        business_type = 'hospital'
+    elif RetailStore.objects.filter(id=business_id).exists():
+        business = RetailStore.objects.get(id=business_id)
+        business_type = 'retail'
+    
+    if not business or not business_type:
+        messages.error(request, 'Business not found')
+        return redirect('index')
+    
     if request.method == 'POST':
         try:
-            business_type = request.POST.get('business_type')
-            business_id = request.POST.get('business_id')
-            rating = float(request.POST.get('rating'))
+            rating = request.POST.get('rating')
             comment = request.POST.get('comment')
             
-            if not all([business_type, business_id, rating, comment]):
+            # Validate inputs
+            if not all([rating, comment]):
                 raise ValidationError('All fields are required')
             
-            if not 0 <= rating <= 5:
-                raise ValidationError('Rating must be between 0 and 5')
+            try:
+                rating = int(rating)
+                if not 1 <= rating <= 5:
+                    raise ValidationError('Rating must be between 1 and 5')
+            except ValueError:
+                raise ValidationError('Invalid rating value')
             
-            Review.objects.create(
+            # Create the review
+            review = Review.objects.create(
+                user=request.user,
                 business_type=business_type,
                 business_id=business_id,
-                user=request.user,
                 rating=rating,
                 comment=comment
             )
+            
             messages.success(request, 'Review added successfully!')
-            return redirect(request.POST.get('next', 'index'))
+            return redirect(business_type)
+            
         except ValidationError as e:
             messages.error(request, str(e))
         except Exception as e:
+            print(f"Error in add_review: {str(e)}")  # For debugging
             messages.error(request, 'Error adding review. Please try again.')
     
-    return redirect('index')
+    # For GET requests or if there's an error in POST
+    context = {
+        'business': business,
+        'business_id': business_id,
+        'business_type': business_type
+    }
+    return render(request, 'add_review.html', context)
 
 def signup(request):
     if request.method == 'POST':
@@ -297,33 +327,22 @@ def profile_view(request):
 @login_required
 def edit_profile(request):
     if request.method == 'POST':
-        print("\n=== Debug Information ===")
-        print("POST data:", request.POST)
-        print("FILES:", request.FILES)
-        
         form = CustomProfileEditForm(request.POST, request.FILES, instance=request.user)
         
-        # Handle profile updates first
         if form.is_valid():
-            print("Profile form is valid")
             form.save()
             messages.success(request, 'Profile updated successfully!')
             
-            # Check if any password fields are filled
             new_password = request.POST.get('new_password1', '').strip()
-            if new_password:  # Only process password if new password is provided
-                print("Password change attempted")
+            if new_password:
                 password_form = PasswordChangeForm(request.user, request.POST)
                 if password_form.is_valid():
-                    print("Password form is valid")
                     user = password_form.save()
                     update_session_auth_hash(request, user)
                     messages.success(request, 'Password updated successfully!')
                 else:
-                    print("Password form errors:", password_form.errors)
                     for error in password_form.errors.values():
                         messages.error(request, error[0])
-                    # Don't redirect here, show the errors
                     return render(request, 'edit_profile.html', {
                         'form': form,
                         'password_form': password_form
@@ -331,18 +350,12 @@ def edit_profile(request):
             
             return redirect('profile')
         else:
-            print("Profile form errors:", form.errors)
             for error in form.errors.values():
                 messages.error(request, error[0])
             password_form = PasswordChangeForm(request.user)
     else:
         form = CustomProfileEditForm(instance=request.user)
         password_form = PasswordChangeForm(request.user)
-    
-    print("\nContext being sent to template:")
-    print("Form:", form)
-    print("Password Form:", password_form)
-    print("=== End Debug Information ===\n")
     
     return render(request, 'edit_profile.html', {
         'form': form,

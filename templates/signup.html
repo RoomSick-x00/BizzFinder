@@ -4,79 +4,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup - BIZZFINDERZ</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+  <title>Sign Up - BizzFinder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'common.css' %}">
   
   <style>
-    /* Container */
-    .auth-container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    body {
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Signup specific styles */
+    .card-header {
+      background-color: #fff;
+      border-bottom: none;
+      padding: 0;
+    }
+
+    .nav-tabs .nav-link {
       text-align: center;
-    }
-    .auth-container h2 {
-      margin-bottom: 20px;
-      color: #004d4d;
-    }
-    .auth-container form {
-      display: flex;
-      flex-direction: column;
-      text-align: left;
-    }
-    .auth-container label {
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #333;
-    }
-    .auth-container input {
-      padding: 10px;
-      margin-bottom: 15px;
-      font-size: 16px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-    .auth-container button {
-      background-color: #004d4d;
-      color: white;
+      border-radius: 0;
       border: none;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
+      color: #6c757d;
+      padding: 15px;
+      font-weight: 500;
       transition: all 0.3s ease;
     }
-    .auth-container button:hover {
-      background-color: #006666;
-      color: #ffd700;
-      transform: scale(1.05);
+    
+    .nav-tabs .nav-link.active {
+      background-color: transparent;
+      border-bottom: 2px solid #007bff;
+      color: #007bff;
     }
-    .auth-container .toggle-link {
-      margin-top: 15px;
-      font-size: 14px;
+
+    .nav-tabs .nav-link:hover {
+      color: #007bff;
+      background-color: #f8f9fa;
     }
-    .auth-container .toggle-link a {
-      color: #004d4d;
-      text-decoration: none;
-      font-weight: bold;
+
+    .card-body {
+      padding: 30px;
     }
-    .auth-container .toggle-link a:hover {
-      text-decoration: underline;
+
+    .vendor-fields {
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      margin-bottom: 20px;
     }
-    .error-message {
-      color: red;
-      font-size: 14px;
-      margin-bottom: 10px;
+
+    .btn-primary {
+      width: 100%;
+      margin-top: 10px;
     }
-    .password-help {
-      font-size: 14px;
-      color: #555;
-      text-align: left;
-      margin-bottom: 10px;
+
+    .mt-3 {
+      text-align: center;
+    }
+
+    .error-feedback {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .form-control.is-invalid {
+      border-color: #dc3545;
+      padding-right: calc(1.5em + 0.75rem);
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
     }
   </style>
 </head>
@@ -93,22 +92,6 @@
         <ul class="nav">
           <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
           <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
-          {% if user.is_authenticated %}
-            <li class="profile-dropdown">
-              <a href="#" class="profile-trigger">
-                <img src="{{ user.profile_picture.url|default_if_none:'/static/images/default-profile.png' }}" alt="Profile Picture" class="nav-profile-pic"> 
-                {{ user.username }}
-              </a>
-              <div class="dropdown-content">
-                <a href="{% url 'profile' %}">Profile</a>
-                <a href="{% url 'edit_profile' %}">Edit Profile</a>
-                <hr class="divider">
-                <a href="{% url 'logout' %}">Logout</a>
-              </div>
-            </li>
-          {% else %}
-            <li><a href="{% url 'signup' %}" class="nav-link text-light">Sign Up/Login</a></li>
-          {% endif %}
           <li><a href="{% url 'contactus' %}" class="nav-link text-light">Contact Us</a></li>
         </ul>
       </div>
@@ -116,47 +99,160 @@
   </header>
 
   <main>
-    <div class="container">
-      <div class="auth-container">
-        <h2>Signup</h2>
+    <div class="container mt-4">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item w-50">
+                  <a class="nav-link {% if not request.GET.type or request.GET.type == 'user' %}active{% endif %}" href="{% url 'signup' %}?type=user">User Signup</a>
+                </li>
+                <li class="nav-item w-50">
+                  <a class="nav-link {% if request.GET.type == 'vendor' %}active{% endif %}" href="{% url 'signup' %}?type=vendor">Vendor Signup</a>
+                </li>
+              </ul>
+            </div>
+            <div class="card-body">
+              <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="user_type" value="{{ request.GET.type|default:'user' }}">
+                
+                <div class="mb-3">
+                  <label for="username" class="form-label">Username</label>
+                  <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                         id="username" name="username" value="{{ form.username.value|default:'' }}" required>
+                  {% if form.username.errors %}
+                    <div class="error-feedback">
+                      {% for error in form.username.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                         id="email" name="email" value="{{ form.email.value|default:'' }}" required>
+                  {% if form.email.errors %}
+                    <div class="error-feedback">
+                      {% for error in form.email.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                  <label for="phone_number" class="form-label">Phone Number</label>
+                  <input type="tel" class="form-control {% if form.phone_number.errors %}is-invalid{% endif %}"
+                         id="phone_number" name="phone_number" value="{{ form.phone_number.value|default:'' }}" required>
+                  {% if form.phone_number.errors %}
+                    <div class="error-feedback">
+                      {% for error in form.phone_number.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                  <label for="password1" class="form-label">Password</label>
+                  <input type="password" class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                         id="password1" name="password1" required>
+                  {% if form.password1.errors %}
+                    <div class="error-feedback">
+                      {% for error in form.password1.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                  <label for="password2" class="form-label">Confirm Password</label>
+                  <input type="password" class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                         id="password2" name="password2" required>
+                  {% if form.password2.errors %}
+                    <div class="error-feedback">
+                      {% for error in form.password2.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
 
-        <form method="POST" action = "{% url 'signup' %}">
-          {% csrf_token %}
+                {% if request.GET.type == 'vendor' %}
+                <div class="vendor-fields">
+                  <div class="mb-3">
+                    <label for="business_name" class="form-label">Business Name</label>
+                    <input type="text" class="form-control {% if form.business_name.errors %}is-invalid{% endif %}"
+                           id="business_name" name="business_name" value="{{ form.business_name.value|default:'' }}">
+                    {% if form.business_name.errors %}
+                      <div class="error-feedback">
+                        {% for error in form.business_name.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="business_address" class="form-label">Business Address</label>
+                    <textarea class="form-control {% if form.business_address.errors %}is-invalid{% endif %}"
+                              id="business_address" name="business_address">{{ form.business_address.value|default:'' }}</textarea>
+                    {% if form.business_address.errors %}
+                      <div class="error-feedback">
+                        {% for error in form.business_address.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="business_category" class="form-label">Business Category</label>
+                    <select class="form-control {% if form.business_category.errors %}is-invalid{% endif %}"
+                            id="business_category" name="business_category">
+                      <option value="">Select a category</option>
+                      <option value="restaurant" {% if form.business_category.value == 'restaurant' %}selected{% endif %}>Restaurant</option>
+                      <option value="retail" {% if form.business_category.value == 'retail' %}selected{% endif %}>Retail Store</option>
+                      <option value="gym" {% if form.business_category.value == 'gym' %}selected{% endif %}>Gym</option>
+                      <option value="hospital" {% if form.business_category.value == 'hospital' %}selected{% endif %}>Hospital</option>
+                      <option value="hotel" {% if form.business_category.value == 'hotel' %}selected{% endif %}>Hotel</option>
+                    </select>
+                    {% if form.business_category.errors %}
+                      <div class="error-feedback">
+                        {% for error in form.business_category.errors %}
+                          {{ error }}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                  <label for="profile_picture" class="form-label">Profile Picture (Optional)</label>
+                  <input type="file" class="form-control {% if form.profile_picture.errors %}is-invalid{% endif %}"
+                         id="profile_picture" name="profile_picture">
+                  {% if form.profile_picture.errors %}
+                    <div class="error-feedback">
+                      {% for error in form.profile_picture.errors %}
+                        {{ error }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
 
-          <label for="id_username">Username:</label>
-          <input type="text" name="username" id="id_username" required>
-
-          <label for="id_email">Email:</label>
-          <input type="email" name="email" id="id_email" required>
-
-          <label for="id_phone_number">Phone No:</label>
-          <input type="tel" name="phone_number" id="id_phone_number"  pattern="[0-9]+" required>
-
-          <label for="id_password1">Password:</label>
-          <input type="password" name="password1" id="id_password1" required>
-          <div class="password-help">
-            <ul>
-              <li>Your password must contain at least 8 characters.</li>
-              <li>It cannot be too similar to your other personal information.</li>
-              <li>It cannot be a commonly used password.</li>
-              <li>It cannot be entirely numeric.</li>
-            </ul>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
+              </form>
+              <div class="mt-3">
+                <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+              </div>
+            </div>
           </div>
-
-          <label for="id_password2">Password confirmation:</label>
-          <input type="password" name="password2" id="id_password2" required>
-
-          {% for field in form %}
-            {% for error in field.errors %}
-            <p class="error-message">{{ error }}</p>
-            {% endfor %}
-          {% endfor %}
-
-          <button type="submit">Signup</button>
-        </form>
-
-        <div class="toggle-link">
-          Already have an account? <a href="{% url 'login' %}">Login</a>
         </div>
       </div>
     </div>
@@ -168,5 +264,18 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check for Django messages
+      {% if messages %}
+        {% for message in messages %}
+          {% if message.tags == 'success' %}
+            alert('Account created successfully. You can login now.');
+            window.location.href = "{% url 'login' %}";
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    });
+  </script>
 </body>
 </html>
