@@ -73,6 +73,7 @@ class Restaurant(models.Model):
 
 # ✅ Review Model
 class Review(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     BUSINESS_TYPES = [
         ('restaurant', 'Restaurant'),
         ('hotel', 'Hotel'),
@@ -81,7 +82,6 @@ class Review(models.Model):
         ('retail', 'Retail Store'),
     ]
     
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     business_type = models.CharField(max_length=20, choices=BUSINESS_TYPES, null=True, blank=True)
     business_id = models.IntegerField(null=True, blank=True)
     rating = models.IntegerField(validators=[MaxValueValidator(5)])
