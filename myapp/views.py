@@ -4,13 +4,37 @@ from django.contrib import messages
 from django.db.models import Avg, Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import ValidationError
-from .models import Restaurant, Hotel, Gym, Hospital, RetailStore, Review, Contact, Category, CustomUser, MenuItem
+from .models import Restaurant, Hotel, Gym, Hospital, RetailStore, Review, Contact, Category, CustomUser, MenuItem, Retailer
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomUserCreationForm
 
+@login_required
+def retailer(request):
+    # Fetch the retailer associated with the current user
+    current_user = request.user
+    retailer = get_object_or_404(Retailer, user=current_user)
+
+    # Fetch businesses based on the retailer's business category
+    businesses = []
+    if retailer.business_category == 'restaurant':
+        businesses = Restaurant.objects.filter(retailer=retailer)
+    elif retailer.business_category == 'hotel':
+        businesses = Hotel.objects.filter(retailer=retailer)
+    elif retailer.business_category == 'gym':
+        businesses = Gym.objects.filter(retailer=retailer)
+    elif retailer.business_category == 'hospital':
+        businesses = Hospital.objects.filter(retailer=retailer)
+    elif retailer.business_category == 'retail':
+        businesses = RetailStore.objects.filter(retailer=retailer)
+
+    return render(request, 'retailer/retailer.html', {
+        'retailer': retailer,
+        'businesses': businesses
+    })
+    
 def index(request):
     """Public homepage view"""
     try:
@@ -278,23 +302,51 @@ def add_review(request, business_id=None):
     return render(request, 'add_review.html', context)
 
 def signup(request):
+    # Get user_type from query parameters or default to 'user'
+    user_type = request.GET.get('type', 'user')
+
     if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             try:
+                # Save the user
                 user = form.save()
+                phone_number = form.cleaned_data.get('phone_number')
+
+                # Check if the user is signing up as a retailer
+                if request.POST.get('user_type') == 'retailer':
+                    # Create retailer profile
+                    Retailer.objects.create(
+                        user=user,
+                        business_name=form.cleaned_data.get('business_name'),
+                        business_address=form.cleaned_data.get('business_address'),
+                        business_category=form.cleaned_data.get('business_category'),
+                        phone_number=phone_number,
+                    )
+                
+                user.backend = 'django.contrib.auth.backends.ModelBackend' 
+
+                # Log in the user and redirect
                 login(request, user)
                 messages.success(request, 'Account created successfully!')
-                return redirect('index')
+                return redirect('login')  # Redirect to login page
             except Exception as e:
+                # Log the exception for debugging
+                print(f"Error during signup: {e}")
                 messages.error(request, 'Error creating account. Please try again.')
         else:
+            # Add form errors to messages
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
     else:
         form = CustomUserCreationForm()
-    return render(request, 'signup.html', {'form': form})
+
+    # Render the signup page with the form and user_type
+    return render(request, 'signup.html', {
+        'form': form,
+        'user_type': user_type,
+    })
 
 def login_view(request):
     if request.method == 'POST':
@@ -305,8 +357,14 @@ def login_view(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, 'Successfully logged in!')
-                return redirect('profile')
+                
+                if hasattr(user, 'retailer'):  
+                    messages.success(request, 'Welcome Retailer!')
+                    return redirect('retailer') 
+                else:
+                    messages.success(request, 'Successfully logged in!')
+                    return redirect('profile')  # fallback for regular users
+
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -314,6 +372,7 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
+
 
 def logout_view(request):
     logout(request)
@@ -436,3 +495,83 @@ def search(request):
     except Exception as e:
         messages.error(request, 'Error performing search. Please try again.')
         return redirect('index')
+
+@login_required
+def add_business(request):
+    if request.method == 'POST':
+        category = request.POST.get('category')
+        name = request.POST.get('name')
+        location = request.POST.get('location')
+        contact = request.POST.get('contact')
+        description = request.POST.get('description')
+
+        if category == 'restaurant':
+            cuisine_type = request.POST.get('cuisine_type')
+            price_range = request.POST.get('price_range')
+            opening_hours = request.POST.get('opening_hours')
+            Restaurant.objects.create(
+                name=name,
+                address=location,
+                phone=contact,
+                description=description,
+                cuisine_type=cuisine_type,
+                price_range=price_range,
+                opening_hours=opening_hours,
+                retailer=retailer
+            )
+            
+        elif category == 'hotel':
+            amenities = request.POST.get('amenities')
+            price_range = request.POST.get('price_range')
+            Hotel.objects.create(
+                name=name,
+                address=location,
+                phone=contact,
+                description=description,
+                amenities=amenities,
+                price_range=price_range,
+                retailer=retailer
+            )   
+            
+        elif category == 'gym':
+            facilities = request.POST.get('facilities')
+            opening_hours = request.POST.get('opening_hours')
+            Gym.objects.create(
+                name=name,
+                address=location,
+                phone=contact,
+                description=description,
+                facilities=facilities,
+                opening_hours=opening_hours,
+                retailer=retailer
+            )
+            
+        elif category == 'retail':
+            store_type = request.POST.get('store_type')
+            operating_hours = request.POST.get('operating_hours')
+            RetailStore.objects.create(
+                name=name,
+                address=location,
+                phone=contact,
+                description=description,
+                store_type=store_type,
+                operating_hours=operating_hours,
+                retailer=retailer
+            )
+            
+        elif category == 'hospital':
+            specialties = request.POST.get('specialties')
+            emergency_services = request.POST.get('emergency_services') == 'Yes'
+            Hospital.objects.create(
+                name=name,
+                address=location,
+                phone=contact,
+                description=description,
+                specialties=specialties,
+                emergency_services=emergency_services,
+                retailer=retailer
+            )
+        messages.success(request, f"{category.capitalize()} added successfully!")
+        return redirect('retailer')  # Redirect to the retailer dashboard
+
+    return render(request, 'retailer/retailer.html')

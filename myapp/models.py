@@ -10,13 +10,13 @@ from django.conf import settings
 class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = [
         ('user', 'User'),
-        ('vendor', 'Vendor'),
+        ('retailer', 'Retailer'),
     ]
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='user')
     phone_number = models.CharField(max_length=15, unique=True)
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
-    profile_picture = models.ImageField(upload_to="profile", blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profile", blank=True, null=True, default='default.jpg')
 
     USERNAME_FIELD = "phone_number"  # Login using phone number
     REQUIRED_FIELDS = ["username", "email"]
@@ -24,6 +24,34 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.phone_number
 
+class Retailer(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='retailer')
+    business_name = models.CharField(max_length=100)
+    business_address = models.TextField()
+    business_category = models.CharField(max_length=50, choices=[
+        ('restaurant', 'Restaurant'),
+        ('retail', 'Retail Store'),
+        ('gym', 'Gym'),
+        ('hospital', 'Hospital'),
+        ('hotel', 'Hotel')
+    ])
+    phone_number = models.CharField(max_length=15)
+    total_views = models.IntegerField(default=0)
+    total_reviews = models.IntegerField(default=0)
+    average_rating = models.FloatField(default=0.0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.business_name
+
+    def update_stats(self):
+        self.total_reviews = self.retailer_reviews.count()
+        if self.total_reviews > 0:
+            self.average_rating = self.retailer_reviews.aggregate(models.Avg('rating'))['rating__avg']
+        else:
+            self.average_rating = 0.0
+        self.save()
 
 class Restaurant(models.Model):
     name = models.CharField(max_length=100)
@@ -58,6 +86,7 @@ class Restaurant(models.Model):
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='restaurants', null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -175,6 +204,7 @@ class Hotel(models.Model):
     amenities = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='hotels', null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -202,6 +232,7 @@ class RetailStore(models.Model):
     special_offers = models.TextField(blank=True, help_text="Any ongoing offers or discounts")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='retail_stores', null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -233,6 +264,7 @@ class Gym(models.Model):
     facilities = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='gyms', null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -259,6 +291,7 @@ class Hospital(models.Model):
     insurance_accepted = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='hospitals', null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -286,58 +319,7 @@ class Category(models.Model):
     class Meta:
         verbose_name_plural = "Categories"
 
-
-class Vendor(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='vendor')
-    business_name = models.CharField(max_length=100)
-    business_address = models.TextField()
-    business_category = models.CharField(max_length=50, choices=[
-        ('restaurant', 'Restaurant'),
-        ('retail', 'Retail Store'),
-        ('gym', 'Gym'),
-        ('hospital', 'Hospital'),
-        ('hotel', 'Hotel')
-    ])
-    phone_number = models.CharField(max_length=15)
-    total_views = models.IntegerField(default=0)
-    total_reviews = models.IntegerField(default=0)
-    average_rating = models.FloatField(default=0.0)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.business_name
-
-    def update_stats(self):
-        self.total_reviews = self.vendor_reviews.count()
-        if self.total_reviews > 0:
-            self.average_rating = self.vendor_reviews.aggregate(models.Avg('rating'))['rating__avg']
-        else:
-            self.average_rating = 0.0
-        self.save()
-
-
-class VendorReview(models.Model):
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE, related_name='vendor_reviews')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)], validators=[MaxValueValidator(5)])
-    comment = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'Vendor Review'
-        verbose_name_plural = 'Vendor Reviews'
-
-    def __str__(self):
-        return f"Review by {self.user.username} for {self.vendor.business_name}"
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.vendor.update_stats()
-
-
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_vendor_profile(sender, instance, created, **kwargs):
-    if created and hasattr(instance, 'user_type') and instance.user_type == 'vendor':
-        Vendor.objects.create(user=instance)
+def create_retailer_profile(sender, instance, created, **kwargs):
+    if created and hasattr(instance, 'user_type') and instance.user_type == 'retailer':
+        Retailer.objects.create(user=instance)

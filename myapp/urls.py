@@ -16,5 +16,7 @@ urlpatterns = [
     path('profile/', views.profile_view, name="profile"),
     path('edit_profile/', views.edit_profile, name="edit_profile"),
     path('signup/', views.signup, name="signup"),
+    path('retailer/', views.retailer, name="retailer"),
     path('add-review/<int:business_id>/', views.add_review, name="add_review"),
+    path('add-business/', views.add_business, name="add_business"),
 ]
