@@ -122,3 +122,20 @@ class VendorProfileForm(forms.ModelForm):
         widgets = {
             'business_address': forms.Textarea(attrs={'rows': 3}),
         }
+        
+class BusinessSearchForm(forms.Form):
+    CATEGORY_CHOICES = [
+        ('', 'All Categories'),
+        ('restaurant', 'Restaurant'),
+        ('hotel', 'Hotel'),
+        ('gym', 'Gym'),
+        ('hospital', 'Hospital'),
+        ('retail', 'Retail Store'),
+    ]
+    
+    category = forms.ChoiceField(choices=CATEGORY_CHOICES, required=False)
+    location = forms.CharField(max_length=100, required=False)
+
+class ItemSearchForm(forms.Form):
+    item_name = forms.CharField(max_length=100, required=True)
+    location = forms.CharField(max_length=100, required=False)

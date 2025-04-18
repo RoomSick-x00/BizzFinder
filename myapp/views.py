@@ -9,7 +9,7 @@ from django.contrib.auth import login, authenticate, logout, update_session_auth
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .forms import CustomLoginForm, CustomProfileEditForm, CustomUserCreationForm
+from .forms import CustomLoginForm, CustomProfileEditForm, CustomUserCreationForm, ItemSearchForm, BusinessSearchForm
 
 @login_required
 def retailer(request):
@@ -17,18 +17,75 @@ def retailer(request):
     current_user = request.user
     retailer = get_object_or_404(Retailer, user=current_user)
 
-    # Fetch businesses based on the retailer's business category
+    # Fetch businesses of all types belonging to this retailer
+    restaurants = Restaurant.objects.filter(retailer=retailer)
+    hotels = Hotel.objects.filter(retailer=retailer)
+    gyms = Gym.objects.filter(retailer=retailer)
+    hospitals = Hospital.objects.filter(retailer=retailer)
+    retail_stores = RetailStore.objects.filter(retailer=retailer)
+    
+    # Combine all businesses into one list with proper type information
     businesses = []
-    if retailer.business_category == 'restaurant':
-        businesses = Restaurant.objects.filter(retailer=retailer)
-    elif retailer.business_category == 'hotel':
-        businesses = Hotel.objects.filter(retailer=retailer)
-    elif retailer.business_category == 'gym':
-        businesses = Gym.objects.filter(retailer=retailer)
-    elif retailer.business_category == 'hospital':
-        businesses = Hospital.objects.filter(retailer=retailer)
-    elif retailer.business_category == 'retail':
-        businesses = RetailStore.objects.filter(retailer=retailer)
+    
+    for restaurant in restaurants:
+        businesses.append({
+            'id': restaurant.id,
+            'name': restaurant.name,
+            'category': 'restaurant',
+            'display_category': 'Restaurant',
+            'address': restaurant.address,
+            'phone': restaurant.phone,
+            'status': restaurant.status,
+            'model_type': 'restaurant'
+        })
+    
+    for hotel in hotels:
+        businesses.append({
+            'id': hotel.id,
+            'name': hotel.name,
+            'category': 'hotel',
+            'display_category': 'Hotel',
+            'address': hotel.address,
+            'phone': hotel.phone,
+            'status': hotel.status,
+            'model_type': 'hotel'
+        })
+    
+    for gym in gyms:
+        businesses.append({
+            'id': gym.id,
+            'name': gym.name,
+            'category': 'gym',
+            'display_category': 'Gym',
+            'address': gym.address,
+            'phone': gym.phone,
+            'status': gym.status,
+            'model_type': 'gym'
+        })
+    
+    for hospital in hospitals:
+        businesses.append({
+            'id': hospital.id,
+            'name': hospital.name,
+            'category': 'hospital',
+            'display_category': 'Hospital',
+            'address': hospital.address,
+            'phone': hospital.phone,
+            'status': hospital.status,
+            'model_type': 'hospital'
+        })
+    
+    for store in retail_stores:
+        businesses.append({
+            'id': store.id,
+            'name': store.name,
+            'category': 'retail',
+            'display_category': 'Retail Store',
+            'address': store.address,
+            'phone': getattr(store, 'phone', store.payment_methods if hasattr(store, 'payment_methods') else ''),
+            'status': store.status,
+            'model_type': 'retail'
+        })
 
     return render(request, 'retailer/retailer.html', {
         'retailer': retailer,
@@ -499,6 +556,7 @@ def search(request):
 @login_required
 def add_business(request):
     if request.method == 'POST':
+        retailer = Retailer.objects.get(user=request.user)
         category = request.POST.get('category')
         name = request.POST.get('name')
         location = request.POST.get('location')
@@ -575,3 +633,234 @@ def add_business(request):
         return redirect('retailer')  # Redirect to the retailer dashboard
 
     return render(request, 'retailer/retailer.html')
+
+
+# views.py (add these functions)
+
+def business_search(request):
+    """Search view for businesses by category and location"""
+    category = request.GET.get('category', '')
+    location = request.GET.get('location', '')
+    
+    # Initialize empty querysets
+    restaurants = Restaurant.objects.none()
+    hotels = Hotel.objects.none()
+    gyms = Gym.objects.none()
+    hospitals = Hospital.objects.none()
+    retail_stores = RetailStore.objects.none()
+    
+    # Apply location filter if provided
+    location_filter = Q(address__icontains=location) if location else Q()
+    
+    # Search based on category
+    if not category or category == 'restaurant':
+        restaurants = Restaurant.objects.filter(location_filter)
+    
+    if not category or category == 'hotel':
+        hotels = Hotel.objects.filter(location_filter)
+    
+    if not category or category == 'gym':
+        gyms = Gym.objects.filter(location_filter)
+    
+    if not category or category == 'hospital':
+        hospitals = Hospital.objects.filter(location_filter)
+    
+    if not category or category == 'retail':
+        retail_stores = RetailStore.objects.filter(location_filter)
+    
+    context = {
+        'category': category,
+        'location': location,
+        'restaurants': restaurants,
+        'hotels': hotels,
+        'gyms': gyms,
+        'hospitals': hospitals,
+        'retail_stores': retail_stores,
+        'search_form': BusinessSearchForm(initial={'category': category, 'location': location}),
+        'total_results': (
+            restaurants.count() +
+            hotels.count() +
+            gyms.count() +
+            hospitals.count() +
+            retail_stores.count()
+        )
+    }
+    
+    return render(request, 'business_search_results.html', context)
+
+def item_search(request):
+    """Search for items across all businesses"""
+    item_name = request.GET.get('item_name', '')
+    location = request.GET.get('location', '')
+    
+    if not item_name:
+        return render(request, 'item_search_results.html', {
+            'item_name': '',
+            'location': '',
+            'search_form': ItemSearchForm(),
+            'results': [],
+            'total_results': 0
+        })
+    
+    # Base query for finding items containing the search term
+    item_filter = Q(name__icontains=item_name)
+    
+    # Location filter to apply to businesses if location is provided
+    location_filter = Q(restaurant__address__icontains=location) if location else Q()
+    
+    # Search for menu items in restaurants
+    menu_items = MenuItem.objects.filter(item_filter)
+    
+    # Apply location filter if provided
+    if location:
+        menu_items = menu_items.filter(restaurant__address__icontains=location)
+    
+    # Group results by business
+    results = []
+    
+    # Group menu items by restaurant
+    restaurants_with_items = {}
+    for item in menu_items:
+        if item.restaurant not in restaurants_with_items:
+            restaurants_with_items[item.restaurant] = []
+        restaurants_with_items[item.restaurant].append(item)
+    
+    # Format results
+    for restaurant, items in restaurants_with_items.items():
+        results.append({
+            'business': restaurant,
+            'business_type': 'restaurant',
+            'items': items
+        })
+    
+    context = {
+        'item_name': item_name,
+        'location': location,
+        'search_form': ItemSearchForm(initial={'item_name': item_name, 'location': location}),
+        'results': results,
+        'total_results': len(results)
+    }
+    
+    return render(request, 'item_search_results.html', context)
+
+@login_required
+def edit_business(request, business_type, business_id):
+    retailer = get_object_or_404(Retailer, user=request.user)
+    
+    # Get the business object based on type and ID
+    business = None
+    if business_type == 'restaurant':
+        business = get_object_or_404(Restaurant, id=business_id, retailer=retailer)
+    elif business_type == 'hotel':
+        business = get_object_or_404(Hotel, id=business_id, retailer=retailer)
+    elif business_type == 'gym':
+        business = get_object_or_404(Gym, id=business_id, retailer=retailer)
+    elif business_type == 'hospital':
+        business = get_object_or_404(Hospital, id=business_id, retailer=retailer)
+    elif business_type == 'retail':
+        business = get_object_or_404(RetailStore, id=business_id, retailer=retailer)
+    
+    if not business:
+        messages.error(request, "Business not found.")
+        return redirect('retailer')
+    
+    if request.method == 'POST':
+        # Update business fields
+        business.name = request.POST.get('name')
+        business.address = request.POST.get('location')
+        business.phone = request.POST.get('contact') if business_type != 'retail' else business.phone
+        
+        if hasattr(business, 'description'):
+            business.description = request.POST.get('description')
+        
+        # Type-specific fields
+        if business_type == 'restaurant':
+            business.cuisine_type = request.POST.get('cuisine_type', '')
+            business.price_range = request.POST.get('price_range', '')
+            business.opening_hours = request.POST.get('opening_hours', '')
+        elif business_type == 'hotel':
+            business.amenities = request.POST.get('amenities', '')
+            business.price_range = request.POST.get('price_range', '')
+        elif business_type == 'gym':
+            business.facilities = request.POST.get('facilities', '')
+            business.opening_hours = request.POST.get('opening_hours', '')
+        elif business_type == 'retail':
+            business.store_type = request.POST.get('store_type', '')
+            business.operating_hours = request.POST.get('operating_hours', '')
+        elif business_type == 'hospital':
+            business.specialties = request.POST.get('specialties', '')
+            business.emergency_services = request.POST.get('emergency_services') == 'Yes'
+        
+        business.save()
+        messages.success(request, f"{business_type.capitalize()} updated successfully!")
+        return redirect('retailer')
+    
+    return redirect('retailer')
+
+# @login_required
+# def get_business_details(request, business_type, business_id):
+#     """API endpoint to get business details for the edit form"""
+#     from django.http import JsonResponse
+    
+#     retailer = get_object_or_404(Retailer, user=request.user)
+    
+#     try:
+#         data = {}
+#         if business_type == 'restaurant':
+#             business = get_object_or_404(Restaurant, id=business_id, retailer=retailer)
+#             data = {
+#                 'name': business.name,
+#                 'location': business.address,
+#                 'contact': business.phone,
+#                 'description': business.description,
+#                 'cuisine_type': business.cuisine_type,
+#                 'price_range': business.price_range,
+#                 'opening_hours': business.opening_hours
+#             }
+#         elif business_type == 'hotel':
+#             business = get_object_or_404(Hotel, id=business_id, retailer=retailer)
+#             data = {
+#                 'name': business.name,
+#                 'location': business.address,
+#                 'contact': business.phone,
+#                 'description': business.description,
+#                 'amenities': business.amenities,
+#                 'price_range': business.price_range
+#             }
+#         # Add similar blocks for other business types
+        
+#         return JsonResponse(data)
+#     except Exception as e:
+#         return JsonResponse({'error': str(e)}, status=400)
+
+
+#debug pannel for retailer info
+@login_required
+def retailer_debug(request):
+    """Debug view to inspect retailer object"""
+    current_user = request.user
+    retailer = get_object_or_404(Retailer, user=current_user)
+    
+    print("Retailer object:", retailer)
+    print("Retailer type:", type(retailer))
+    print("Retailer dir:", dir(retailer))
+    
+    # Get all field names
+    field_names = [field.name for field in retailer._meta.fields]
+    
+    # Create a dict of field name -> value
+    field_values = {}
+    for name in field_names:
+        field_values[name] = getattr(retailer, name, None)
+    
+    context = {
+        'retailer': retailer,
+        'field_names': field_names,
+        'field_values': field_values,
+    }
+    
+    return render(request, 'retailer/retailer_debug.html', context)
+
+
+def interaction():
+    pass

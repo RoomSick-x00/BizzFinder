@@ -1,10 +1,11 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BizzFinderz</title>
+
+{% block title %}
+  BizzFinderz - Retailer Dashboard
+{% endblock %}
+
+{% block extra_css %}
   <link rel="stylesheet" href="{% static 'retailer css/retailer.css' %}" />
   <style>
     /* Popup Form Styles */
@@ -60,21 +61,26 @@
     .overlay.active {
       display: block;
     }
+    /* Action buttons */
+    .action-btn {
+      padding: 5px 10px;
+      margin-right: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 3px;
+    }
+    .edit-btn {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+    }
   </style>
-</head>
-<body>
-  <!-- Navbar -->
-  <header class="navbar">
-    <div class="logo">BizzFinderz</div>
-    <ul class="nav-links">
-      <li><a href="{% url 'index' %}">HOME</a></li>
-      <li><a href="#">CONTACT US</a></li>
-      <li><a href="{% url 'logout' %}">LOGOUT</a></li>
-      <li><a href="#" class="primary">INTERACTION</a></li>
-      <li><a href="#" id="add-business-btn" class="primary">ADD BUSINESS</a></li>
-    </ul>
-  </header>
+{% endblock %}
 
+{% block content %}
   <!-- Hero Section -->
   <main class="hero">
     <section class="hero-content">
@@ -95,16 +101,30 @@
     <!-- Retailer Details (Top Right Corner) -->
     <aside class="retailer-info">
       <h3>Retailer Info</h3>
-      <p><strong>Name:</strong> {{ retailer.name }}</p>
-      <p><strong>Location:</strong> {{ retailer.location }}</p>
-      <p><strong>Contact:</strong> {{ retailer.contact }}</p>
-      <p><strong>Status:</strong> {{ retailer.status }}</p>
+      <p>
+        <strong>Name:</strong> {{ retailer.business_name|default:'Not set' }}
+      </p>
+      <p>
+        <strong>Location:</strong> {{ retailer.business_address|default:'Not set' }}
+      </p>
+      <p>
+        <strong>Contact:</strong> {{ retailer.phone_number|default:'Not set' }}
+      </p>
+      <p>
+        <strong>Category:</strong> {{ retailer.get_business_category_display|default:'Not set' }}
+      </p>
+
+      {% if not retailer.business_name or not retailer.business_address %}
+        <div class="alert alert-warning" style="margin-top: 10px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 5px;">
+          <p>Your business profile is incomplete. Please update your business information.</p>
+          <a href="#" class="btn btn-sm" style="background-color: #856404; color: white; padding: 3px 8px; text-decoration: none; border-radius: 3px;">Update Profile</a>
+        </div>
+      {% endif %}
     </aside>
   </main>
-
   <!-- Business Listings Table -->
   <section class="business-table">
-    <h2> Businesses</h2>
+    <h2>Businesses</h2>
     <table>
       <thead>
         <tr>
@@ -113,23 +133,35 @@
           <th>Location</th>
           <th>Contact</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for business in businesses %}
-        <tr>
-          <td>{{ business.name }}</td>
-          <td>{{ business.category }}</td>
-          <td>{{ business.location }}</td>
-          <td>{{ business.contact }}</td>
-          <td>{{ business.status }}</td>
-        </tr>
+          <tr>
+            <td>{{ business.name }}</td>
+            <td>{{ business.display_category }}</td>
+            <td>{{ business.address }}</td>
+            <td>{{ business.phone }}</td>
+            <td>{{ business.status }}</td>
+            <td>
+              <button class="action-btn edit-btn" onclick="openEditForm('{{ business.model_type }}', '{{ business.id }}', '{{ business.name }}', '{{ business.address }}', '{{ business.phone }}')">Edit</button>
+              <button class="action-btn delete-btn">Delete</button>
+            </td>
+          </tr>
         {% empty %}
-        <tr><td colspan="5">No businesses available.</td></tr>
+          <tr>
+            <td colspan="6">No businesses available.</td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
   </section>
+
+  <!-- Add Business Button -->
+  <div class="add-business-button-container" style="text-align: center; margin: 20px 0;">
+    <button id="add-business-btn" class="btn btn-primary">ADD BUSINESS</button>
+  </div>
 
   <!-- Add Business Popup Form -->
   <div class="overlay" id="overlay"></div>
@@ -155,65 +187,167 @@
     </form>
   </div>
 
-  <!-- JavaScript for Dynamic Form Fields -->
+  <!-- Edit Business Popup Form -->
+  <div class="popup-form" id="editPopupForm">
+    <h2>Edit Business</h2>
+    <form method="post" id="editBusinessForm">
+      {% csrf_token %}
+      <input type="hidden" name="business_id" id="edit_business_id" />
+      <input type="hidden" name="business_type" id="edit_business_type" />
+      <input type="text" name="name" id="edit_name" placeholder="Business Name" required />
+      <input type="text" name="location" id="edit_location" placeholder="Location" required />
+      <input type="email" name="contact" id="edit_contact" placeholder="Contact Email" required />
+      <textarea name="description" id="edit_description" placeholder="Description" rows="4"></textarea>
+      <div id="edit_dynamic_fields"></div>
+      <button type="submit">Update Business</button>
+      <button type="button" class="cancel" id="closeEditFormBtn">Cancel</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
   <script>
-    // Open/Close Popup Form
-    const addBusinessBtn = document.getElementById('add-business-btn');
-    const closeFormBtn = document.getElementById('closeFormBtn');
-    const popupForm = document.getElementById('popupForm');
-    const overlay = document.getElementById('overlay');
-
+    // Open/Close Add Popup Form
+    const addBusinessBtn = document.getElementById('add-business-btn')
+    const closeFormBtn = document.getElementById('closeFormBtn')
+    const popupForm = document.getElementById('popupForm')
+    const overlay = document.getElementById('overlay')
+    
     addBusinessBtn.addEventListener('click', () => {
-      popupForm.classList.add('active');
-      overlay.classList.add('active');
-    });
-
+      popupForm.classList.add('active')
+      overlay.classList.add('active')
+    })
+    
     closeFormBtn.addEventListener('click', () => {
-      popupForm.classList.remove('active');
-      overlay.classList.remove('active');
-    });
-
+      popupForm.classList.remove('active')
+      overlay.classList.remove('active')
+    })
+    
+    // Open/Close Edit Popup Form
+    const editPopupForm = document.getElementById('editPopupForm')
+    const closeEditFormBtn = document.getElementById('closeEditFormBtn')
+    
+    function openEditForm(businessType, businessId, name, location, contact) {
+      document.getElementById('edit_business_id').value = businessId
+      document.getElementById('edit_business_type').value = businessType
+      document.getElementById('edit_name').value = name
+      document.getElementById('edit_location').value = location
+      document.getElementById('edit_contact').value = contact || ''
+    
+      // Set the form action based on business type and ID
+      document.getElementById('editBusinessForm').action = `/edit-business/${businessType}/${businessId}/`
+    
+      // Load dynamic fields based on business type
+      loadEditDynamicFields(businessType, businessId)
+    
+      editPopupForm.classList.add('active')
+      overlay.classList.add('active')
+    }
+    
+    closeEditFormBtn.addEventListener('click', () => {
+      editPopupForm.classList.remove('active')
+      overlay.classList.remove('active')
+    })
+    
     overlay.addEventListener('click', () => {
-      popupForm.classList.remove('active');
-      overlay.classList.remove('active');
-    });
-
-    // Dynamic Fields Based on Category
-    const categorySelect = document.getElementById('category-select');
-    const dynamicFieldsContainer = document.getElementById('dynamic-fields');
-
+      popupForm.classList.remove('active')
+      editPopupForm.classList.remove('active')
+      overlay.classList.remove('active')
+    })
+    
+    // Dynamic Fields Based on Category for Add Form
+    const categorySelect = document.getElementById('category-select')
+    const dynamicFieldsContainer = document.getElementById('dynamic-fields')
+    
     categorySelect.addEventListener('change', () => {
-      const category = categorySelect.value;
-      dynamicFieldsContainer.innerHTML = ''; // Clear previous fields
-
+      const category = categorySelect.value
+      dynamicFieldsContainer.innerHTML = '' // Clear previous fields
+    
       if (category === 'restaurant') {
         dynamicFieldsContainer.innerHTML = `
-          <input type="text" name="cuisine_type" placeholder="Cuisine Type" />
-          <input type="text" name="price_range" placeholder="Price Range (e.g., $$)" />
-          <input type="text" name="opening_hours" placeholder="Opening Hours" />
-        `;
+                    <input type="text" name="cuisine_type" placeholder="Cuisine Type" />
+                    <input type="text" name="price_range" placeholder="Price Range (e.g., $$)" />
+                    <input type="text" name="opening_hours" placeholder="Opening Hours" />
+                  `
       } else if (category === 'hotel') {
         dynamicFieldsContainer.innerHTML = `
-          <input type="text" name="amenities" placeholder="Amenities" />
-          <input type="text" name="price_range" placeholder="Price Range (e.g., $$)" />
-        `;
+                    <input type="text" name="amenities" placeholder="Amenities" />
+                    <input type="text" name="price_range" placeholder="Price Range (e.g., $$)" />
+                  `
       } else if (category === 'gym') {
         dynamicFieldsContainer.innerHTML = `
-          <input type="text" name="facilities" placeholder="Facilities" />
-          <input type="text" name="opening_hours" placeholder="Opening Hours" />
-        `;
+                    <input type="text" name="facilities" placeholder="Facilities" />
+                    <input type="text" name="opening_hours" placeholder="Opening Hours" />
+                  `
       } else if (category === 'hospital') {
         dynamicFieldsContainer.innerHTML = `
-          <input type="text" name="specialties" placeholder="Specialties" />
-          <input type="text" name="emergency_services" placeholder="Emergency Services (Yes/No)" />
-        `;
+                    <input type="text" name="specialties" placeholder="Specialties" />
+                    <select name="emergency_services">
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  `
       } else if (category === 'retail') {
         dynamicFieldsContainer.innerHTML = `
-          <input type="text" name="store_type" placeholder="Store Type (e.g., Electronics)" />
-          <input type="text" name="operating_hours" placeholder="Operating Hours" />
-        `;
+                    <input type="text" name="store_type" placeholder="Store Type (e.g., Electronics)" />
+                    <input type="text" name="operating_hours" placeholder="Operating Hours" />
+                  `
       }
-    });
+    })
+    
+    // Load dynamic fields for Edit form based on business type
+    function loadEditDynamicFields(businessType, businessId) {
+      const editDynamicFieldsContainer = document.getElementById('edit_dynamic_fields')
+      editDynamicFieldsContainer.innerHTML = '' // Clear previous fields
+    
+      if (businessType === 'restaurant') {
+        editDynamicFieldsContainer.innerHTML = `
+                    <input type="text" name="cuisine_type" id="edit_cuisine_type" placeholder="Cuisine Type" />
+                    <input type="text" name="price_range" id="edit_price_range" placeholder="Price Range (e.g., $$)" />
+                    <input type="text" name="opening_hours" id="edit_opening_hours" placeholder="Opening Hours" />
+                  `
+        // Here you would need to load the actual values from the database
+        // This would typically be done with an AJAX call to get the business details
+      } else if (businessType === 'hotel') {
+        editDynamicFieldsContainer.innerHTML = `
+                    <input type="text" name="amenities" id="edit_amenities" placeholder="Amenities" />
+                    <input type="text" name="price_range" id="edit_price_range" placeholder="Price Range (e.g., $$)" />
+                  `
+      } else if (businessType === 'gym') {
+        editDynamicFieldsContainer.innerHTML = `
+                    <input type="text" name="facilities" id="edit_facilities" placeholder="Facilities" />
+                    <input type="text" name="opening_hours" id="edit_opening_hours" placeholder="Opening Hours" />
+                  `
+      } else if (businessType === 'hospital') {
+        editDynamicFieldsContainer.innerHTML = `
+                    <input type="text" name="specialties" id="edit_specialties" placeholder="Specialties" />
+                    <select name="emergency_services" id="edit_emergency_services">
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  `
+      } else if (businessType === 'retail') {
+        editDynamicFieldsContainer.innerHTML = `
+                    <input type="text" name="store_type" id="edit_store_type" placeholder="Store Type (e.g., Electronics)" />
+                    <input type="text" name="operating_hours" id="edit_operating_hours" placeholder="Operating Hours" />
+                  `
+      }
+    
+      // For a more complete solution, you'd make an AJAX call here to get the current values
+      // Here's a simplified example of what that might look like:
+      /*
+                fetch(`/api/get-business-details/${businessType}/${businessId}/`)
+                  .then(response => response.json())
+                  .then(data => {
+                    // Populate the form fields with the returned data
+                    if (businessType === 'restaurant') {
+                      document.getElementById('edit_cuisine_type').value = data.cuisine_type;
+                      document.getElementById('edit_price_range').value = data.price_range;
+                      document.getElementById('edit_opening_hours').value = data.opening_hours;
+                    }
+                    // Similar for other business types
+                  });
+                */
+    }
   </script>
-</body>
-</html>
+{% endblock %}

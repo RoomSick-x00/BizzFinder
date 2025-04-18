@@ -86,6 +86,10 @@ class Restaurant(models.Model):
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, default='Active', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive')
+    ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='restaurants', null=True, blank=True)
 
     def __str__(self):
@@ -204,6 +208,10 @@ class Hotel(models.Model):
     amenities = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, default='Active', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive')
+    ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='hotels', null=True, blank=True)
 
     def __str__(self):
@@ -232,6 +240,10 @@ class RetailStore(models.Model):
     special_offers = models.TextField(blank=True, help_text="Any ongoing offers or discounts")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, default='Active', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive')
+    ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='retail_stores', null=True, blank=True)
 
     def __str__(self):
@@ -264,6 +276,10 @@ class Gym(models.Model):
     facilities = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, default='Active', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive')
+    ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='gyms', null=True, blank=True)
 
     def __str__(self):
@@ -291,6 +307,10 @@ class Hospital(models.Model):
     insurance_accepted = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, default='Active', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive')
+    ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='hospitals', null=True, blank=True)
 
     def __str__(self):

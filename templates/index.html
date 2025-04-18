@@ -112,9 +112,34 @@
         font-weight: bold;
         margin-right: 10px;
       }
+      .search-section {
+        margin-top: 25vh;
+        position: relative;
+        z-index: 2;
+        width: 800px;
+      }
+      
+      .search-card {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 15px;
+        background-color: rgba(255, 255, 255, 0.95);
+      }
+      
+      .nav-tabs .nav-link {
+        color: #004d4d;
+        font-weight: 600;
+      }
+      
+      .nav-tabs .nav-link.active {
+        color: #004d4d;
+        border-color: #004d4d;
+      }
       
       /* Responsive Design */
       @media (max-width: 768px) {
+        .search-section {
+          margin-top: 15vh;
+        }
         .category-scroll {
           justify-content: center;
         }
@@ -183,8 +208,69 @@
         </header>
       </div>
 
-      <div class="InputContainer mt-6">
-        <input placeholder="Search..." id="input" class="input" name="text" type="text" />
+      <!-- Replace the existing InputContainer in index.html with this -->
+      <div class="search-section mt-6">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-md-10">
+              <div class="card search-card">
+                <div class="card-body">
+                  <ul class="nav nav-tabs" id="searchTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active" id="business-search-tab" data-bs-toggle="tab" data-bs-target="#business-search" type="button" role="tab" aria-controls="business-search" aria-selected="true">Business Search</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="item-search-tab" data-bs-toggle="tab" data-bs-target="#item-search" type="button" role="tab" aria-controls="item-search" aria-selected="false">Item Search</button>
+                    </li>
+                  </ul>
+
+                  <div class="tab-content mt-3" id="searchTabsContent">
+                    <!-- Business Search Form -->
+                    <div class="tab-pane fade show active" id="business-search" role="tabpanel" aria-labelledby="business-search-tab">
+                      <form action="{% url 'business_search' %}" method="GET" class="search-form">
+                        <div class="row g-3">
+                          <div class="col-md-5">
+                            <select name="category" class="form-select" id="categorySelect">
+                              <option value="">All Categories</option>
+                              <option value="restaurant">Restaurants</option>
+                              <option value="hotel">Hotels</option>
+                              <option value="gym">Gyms</option>
+                              <option value="hospital">Hospitals</option>
+                              <option value="retail">Retail Stores</option>
+                            </select>
+                          </div>
+                          <div class="col-md-5">
+                            <input type="text" name="location" class="form-control" placeholder="Enter location" />
+                          </div>
+                          <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Search</button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+
+                    <!-- Item Search Form -->
+                    <div class="tab-pane fade" id="item-search" role="tabpanel" aria-labelledby="item-search-tab">
+                      <form action="{% url 'item_search' %}" method="GET" class="item-search-form">
+                        <div class="row g-3">
+                          <div class="col-md-5">
+                            <input type="text" name="item_name" class="form-control" placeholder="Search for items" required />
+                          </div>
+                          <div class="col-md-5">
+                            <input type="text" name="location" class="form-control" placeholder="Your location (optional)" />
+                          </div>
+                          <div class="col-md-2">
+                            <button type="submit" class="btn btn-success w-100">Search</button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
