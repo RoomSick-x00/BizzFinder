@@ -537,7 +537,6 @@ def get_partner_chats(request, partner_id):
 
         # Mark received messages as read
         UserChat.objects.filter(user=partner, sent_to=request.user, status=0).update(status=1)
-        UserChat.objects.filter(sent_to=partner, user=request.user, status=0).update(status=1)
 
         chats_data = [{
             'id': chat.id,
