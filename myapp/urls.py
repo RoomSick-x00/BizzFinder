@@ -17,4 +17,8 @@ urlpatterns = [
     path('edit_profile/', views.edit_profile, name="edit_profile"),
     path('signup/', views.signup, name="signup"),
     path('add-review/<int:business_id>/', views.add_review, name="add_review"),
+    path('chat', views.chat, name="chat"),
+    path('send_message/', views.send_message, name='message'),
+    path('get_partner_chats/<int:partner_id>/', views.get_partner_chats, name='get_partner_chats'),
+
 ]

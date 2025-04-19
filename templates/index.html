@@ -147,6 +147,7 @@
           <ul class="nav">
             <li><a href="{% url 'index' %}" class="nav-link text-light">Home</a></li>
             <li><a href="{% url 'categories' %}" class="nav-link text-light">Categories</a></li>
+            <li><a href="{% url 'chat' %}" class="nav-link text-light">My Chats</a></li>
             {% if user.is_authenticated %}
               <li class="profile-dropdown">
                 <a href="#" class="profile-trigger">
