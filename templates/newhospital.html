@@ -318,7 +318,7 @@
               <div class="back-content">
                 {% if user.is_authenticated %}
                   <div class="review-button-wrapper">
-                    <a href="{% url 'add_review' hospital.id %}" class="leave-review-button">Leave a Review</a>
+                    <a href="{% url 'add_review' business_type_param='hospital' business_id=hospital.id %}" class="leave-review-button">Leave a Review</a>
                   </div>
                 {% else %}
                   <p class="login-prompt">

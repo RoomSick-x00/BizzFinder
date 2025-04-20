@@ -290,32 +290,46 @@ def contactus(request):
     return render(request, 'contactus.html')
 
 @login_required
-def add_review(request, business_id=None):
-    # First, try to find the business and its type
+def add_review(request, business_id=None, business_type_param=None):
+    # Use the business_type_param if provided
+    business_type = business_type_param
     business = None
-    business_type = None
     
-    # Check each business type
-    if Restaurant.objects.filter(id=business_id).exists():
-        business = Restaurant.objects.get(id=business_id)
-        business_type = 'restaurant'
-    elif Hotel.objects.filter(id=business_id).exists():
-        business = Hotel.objects.get(id=business_id)
-        business_type = 'hotel'
-    elif Gym.objects.filter(id=business_id).exists():
-        business = Gym.objects.get(id=business_id)
-        business_type = 'gym'
-    elif Hospital.objects.filter(id=business_id).exists():
-        business = Hospital.objects.get(id=business_id)
-        business_type = 'hospital'
-    elif RetailStore.objects.filter(id=business_id).exists():
-        business = RetailStore.objects.get(id=business_id)
-        business_type = 'retail'
+    # Find the business based on type and ID
+    if business_type == 'restaurant':
+        business = get_object_or_404(Restaurant, id=business_id)
+    elif business_type == 'hotel':
+        business = get_object_or_404(Hotel, id=business_id)
+    elif business_type == 'gym':
+        business = get_object_or_404(Gym, id=business_id)
+    elif business_type == 'hospital':
+        business = get_object_or_404(Hospital, id=business_id)
+    elif business_type == 'retail':
+        business = get_object_or_404(RetailStore, id=business_id)
+    else:
+        # Fallback to your old method if type not specified
+        if Restaurant.objects.filter(id=business_id).exists():
+            business = Restaurant.objects.get(id=business_id)
+            business_type = 'restaurant'
+        elif Hotel.objects.filter(id=business_id).exists():
+            business = Hotel.objects.get(id=business_id)
+            business_type = 'hotel'
+        elif Gym.objects.filter(id=business_id).exists():
+            business = Gym.objects.get(id=business_id)
+            business_type = 'gym'
+        elif Hospital.objects.filter(id=business_id).exists():
+            business = Hospital.objects.get(id=business_id)
+            business_type = 'hospital'
+        elif RetailStore.objects.filter(id=business_id).exists():
+            business = RetailStore.objects.get(id=business_id)
+            business_type = 'retail'
     
+    # If no valid business or type is found, return an error
     if not business or not business_type:
         messages.error(request, 'Business not found')
         return redirect('index')
     
+    # Handle POST request (submitting a review)
     if request.method == 'POST':
         try:
             rating = request.POST.get('rating')
@@ -326,14 +340,14 @@ def add_review(request, business_id=None):
                 raise ValidationError('All fields are required')
             
             try:
-                rating = int(rating)
+                rating = int(rating)  # Convert rating to integer
                 if not 1 <= rating <= 5:
                     raise ValidationError('Rating must be between 1 and 5')
             except ValueError:
                 raise ValidationError('Invalid rating value')
             
             # Create the review
-            review = Review.objects.create(
+            Review.objects.create(
                 user=request.user,
                 business_type=business_type,
                 business_id=business_id,
@@ -341,13 +355,14 @@ def add_review(request, business_id=None):
                 comment=comment
             )
             
+            # Success message and redirect
             messages.success(request, 'Review added successfully!')
-            return redirect(business_type)
+            return redirect(business_type)  # Redirect to the business-specific page
             
         except ValidationError as e:
-            messages.error(request, str(e))
+            messages.error(request, str(e))  # Display validation error
         except Exception as e:
-            print(f"Error in add_review: {str(e)}")  # For debugging
+            print(f"Error in add_review: {str(e)}")  # Log unexpected errors
             messages.error(request, 'Error adding review. Please try again.')
     
     # For GET requests or if there's an error in POST
@@ -366,8 +381,16 @@ def signup(request):
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             try:
-                # Save the user
-                user = form.save()
+                # Save the user but don't commit yet
+                user = form.save(commit=False)
+                
+                # Update the user_type based on the submitted form
+                if request.POST.get('user_type') == 'retailer':
+                    user.user_type = 'retailer'  # Set user_type to retailer
+                
+                # Now save the user with the updated user_type
+                user.save()
+                
                 phone_number = form.cleaned_data.get('phone_number')
 
                 # Check if the user is signing up as a retailer
