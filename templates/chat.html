@@ -1,0 +1,368 @@
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIZZFINDERZ - Find Local Businesses</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'common.css' %}">
+    <style>
+        /* Specific styles for index page */
+        .home-upper-section {
+            background: url('https://tse3.mm.bing.net/th?id=OIG1.zeCOIfvncpy.pbTc8PE8&pid=ImgGn') no-repeat center center/cover;
+            height: 60vh;
+            color: white;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .home-upper-section header {
+            background-color: rgba(0, 77, 77, 0.9);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+        }
+
+        .InputContainer {
+            width: 250px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, rgb(227, 213, 255), rgb(255, 231, 231));
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.075);
+            margin-top: 25vh; /* Position from top */
+            position: relative;
+            z-index: 2; /* Above the overlay */
+        }
+
+        .input {
+            width: 200px;
+            height: 40px;
+            border: none;
+            outline: none;
+            caret-color: rgb(255, 81, 0);
+            background-color: rgb(255, 255, 255);
+            border-radius: 30px;
+            padding-left: 15px;
+            letter-spacing: 0.8px;
+            color: rgb(19, 19, 19);
+            font-size: 13.4px;
+        }
+
+        .category-scroll {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+        }
+
+        .category {
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .category:hover {
+            transform: scale(1.05);
+        }
+
+        .category img {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .category-name {
+            margin-top: 10px;
+            color: #004d4d;
+            font-weight: bold;
+        }
+
+        .testimonials-section {
+            background-color: #f9f9f9;
+            padding: 40px 20px;
+            margin-top: 40px;
+        }
+
+        .testimonial {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .testimonial img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .reviewer-name {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .category-scroll {
+                justify-content: center;
+            }
+
+            .InputContainer {
+                width: 200px;
+            }
+
+            .input {
+                width: 100%;
+            }
+
+            .category img {
+                width: 150px;
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+<body>
+<section>
+    <div class="container py-5">
+        <div class="row">
+            <!-- Left Column: Members -->
+            <div class="col-md-6 col-lg-5 col-xl-4 mb-4 mb-md-0">
+                <h5 class="font-weight-bold mb-3 text-center text-lg-start">Members</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0" id="partnerList">
+                            {% for partner in partners %}
+                            <li class="p-2 border-bottom {% if partner == selected_partner %}bg-body-tertiary {% endif %}"
+                                data-partner-id="{{ partner.id }}"
+                                onclick="loadPartnerChats({{ partner.id }})">
+                                <a href="#!" class="d-flex justify-content-between">
+                                    <div class="d-flex flex-row">
+                                        <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-{{ forloop.counter|add:7 }}.webp"
+                                             alt="avatar"
+                                             class="rounded-circle d-flex align-self-center me-3 shadow-1-strong"
+                                             width="60">
+                                        <div class="pt-1">
+                                            <p class="fw-bold mb-0">{{ partner.username }}</p>
+                                            <p class="small text-muted">
+                                                {% with last_message=partner.received_chats.last %}
+                                                {% if last_message %}
+                                                {{ last_message.message|truncatechars:20 }}
+                                                {% else %}
+                                                No messages
+                                                {% endif %}
+                                                {% endwith %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="pt-1">
+                                        <span class="badge bg-danger float-end">{{ partner.unread_count }}</span>
+                                    </div>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Chat Messages -->
+            <div class="col-md-6 col-lg-7 col-xl-8">
+                <div id="chatContainer">
+                    {% if selected_partner %}
+                    <ul class="list-unstyled" id="chatMessages">
+                        {% for chat in chats %}
+                        <li class="d-flex justify-content-between mb-4 {% if chat.user == request.user %}flex-row-reverse {% endif %}">
+                            <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-{% if chat.user == request.user %} 6 {% else %} {{ forloop.counter|add:7 }} {% endif %}.webp"
+                                 alt="avatar" class="rounded-circle d-flex align-self-start me-3 shadow-1-strong"
+                                 width="60">
+                            <div class="card {% if chat.user == request.user %} ms-3 {% else %} me-3 {% endif %}">
+                                <div class="card-header d-flex justify-content-between p-3">
+                                    <p class="fw-bold mb-0">
+                                        {% if chat.user == request.user %}You{% else %}{{ chat.user.username }} {% endif
+                                        %}
+                                    </p>
+                                    <p class="text-muted small mb-0" style="margin-left: 10px"><i
+                                            class="far fa-clock"></i> {{
+                                        chat.created_at|date:"M j, Y, g:i a" }}</p>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-0">{{ chat.message }}</p>
+                                    {% if chat.user == request.user %}
+                                    <small class="text-muted">
+                                        Status: {% if chat.status == 0 %} Unread {% else %}Read {% endif %}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="alert alert-info">Select a partner to start chatting</div>
+                    {% endif %}
+
+                    {% if selected_partner %}
+                    <div class="bg-white mb-3">
+                        {% csrf_token %}
+                        <div data-mdb-input-init class="form-outline">
+                            <textarea class="form-control bg-body-tertiary" id="messageInput" rows="4"></textarea>
+                            <label class="form-label" for="messageInput">Message</label>
+                        </div>
+                        <button type="button" class="btn btn-info btn-rounded float-end mt-2"
+                                id="sendMessageBtn" onclick="sendMessage(selected_partner.id)">
+                            Send
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    let selectedPartnerId = null;
+
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+            document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    }
+
+    async function loadPartnerChats(partnerId) {
+        console.log(partnerId);
+        try {
+            // Update selected partner styling
+            document.querySelectorAll('#partnerList li').forEach(li => {
+                li.classList.remove('bg-body-tertiary');
+                if (li.dataset.partnerId == partnerId) {
+                    li.classList.add('bg-body-tertiary');
+                }
+            });
+
+            selectedPartnerId = partnerId;
+
+            // Load chats via AJAX
+            const response = await fetch(`/get_partner_chats/${partnerId}/`);
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                const chatContainer = document.getElementById('chatContainer');
+                let html = `
+                <ul class="list-unstyled" id="chatMessages">
+                    ${data.chats.map(chat => `
+                    <li class="d-flex justify-content-between mb-4 ${chat.is_sender ? 'flex-row-reverse' : ''}">
+                        <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-${chat.is_sender ? '6' : '8'}.webp"
+                            alt="avatar" class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
+                        <div class="card ${chat.is_sender ? 'ms-3' : 'me-3'}">
+                            <div class="card-header d-flex justify-content-between p-3">
+                                <p class="fw-bold mb-0">${chat.is_sender ? 'You' : chat.sender}</p>
+                                <p class="text-muted small mb-0" style="margin-left: 10px"><i class="far fa-clock"></i> ${chat.timestamp}</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0">${chat.text}</p>
+                                ${chat.is_sender ? `
+                                <small class="text-muted">
+                                    Status: ${chat.status === 0 ? 'Unread' : 'Read'}
+                                </small>` : ''}
+                            </div>
+                        </div>
+                    </li>
+                    `).join('')}
+                </ul>
+                <div class="bg-white mb-3">
+                    <div data-mdb-input-init class="form-outline">
+                        <textarea class="form-control bg-body-tertiary" id="messageInput" rows="4"></textarea>
+                        <label class="form-label" for="messageInput">Message</label>
+                    </div>
+                    <button type="button" class="btn btn-info btn-rounded float-end mt-2"
+                            id="sendMessageBtn" onclick="sendMessage(${partnerId})">
+                        Send
+                    </button>
+                </div>
+            `;
+                chatContainer.innerHTML = html;
+            }
+        } catch (error) {
+            console.error('Error loading chats:', error);
+        }
+    }
+
+    async function sendMessage(partnerId) {
+        console.log(partnerId);
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value.trim();
+
+        if (!message) return;
+
+        try {
+            const response = await fetch('/send_message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken(),
+                },
+                body: JSON.stringify({
+                    message: message,
+                    sent_to: partnerId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                messageInput.value = '';
+                const chatMessages = document.getElementById('chatMessages');
+                const newMessage = createMessageElement(data.message);
+                chatMessages.appendChild(newMessage);
+                chatMessages.lastElementChild.scrollIntoView({behavior: 'smooth'});
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
+    }
+
+    function createMessageElement(messageData) {
+        const li = document.createElement('li');
+        li.className = `d-flex justify-content-between mb-4 ${messageData.is_sender ? 'flex-row-reverse' : ''}`;
+        li.innerHTML = `
+        <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-${messageData.is_sender ? '6' : '8'}.webp"
+            alt="avatar" class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
+        <div class="card ${messageData.is_sender ? 'ms-3' : 'me-3'}">
+            <div class="card-header d-flex justify-content-between p-3">
+                <p class="fw-bold mb-0">${messageData.is_sender ? 'You ' : messageData.sender}</p>
+                <p class="text-muted small mb-0 p-1" style="margin-left: 10"><i class="far fa-clock"></i> ${messageData.timestamp}</p>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">${messageData.text}</p>
+                ${messageData.is_sender ? `
+                <small class="text-muted">
+                    Status: ${messageData.status === 0 ? 'Unread' : 'Read'}
+                </small>` : ''}
+            </div>
+        </div>
+    `;
+        return li;
+    }
+</script>
+<footer>
+    <h3>About Us</h3>
+    <p>Welcome to <span class="highlight">BizzFinderz</span>, your trusted platform for connecting with businesses that
+        meet your needs. Explore our diverse categories and enjoy a seamless user experience with just a few clicks!</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>

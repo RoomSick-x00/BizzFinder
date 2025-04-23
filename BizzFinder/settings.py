@@ -145,3 +145,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'profile'  # Redirect to profile page after login
 LOGOUT_REDIRECT_URL = 'index'
+
+# Chat server
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}

@@ -63,7 +63,7 @@ class Restaurant(models.Model):
 
     # Updated rating field to avoid decimal rounding issues
     rating = models.DecimalField(
-        max_digits=3, 
+        max_digits=3,
         decimal_places=1,
         validators=[MaxValueValidator(5.0)],
         default=0,
@@ -114,7 +114,12 @@ class Review(models.Model):
         ('hospital', 'Hospital'),
         ('retail', 'Retail Store'),
     ]
+
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
     
+
     business_type = models.CharField(max_length=20, choices=BUSINESS_TYPES, null=True, blank=True)
     business_id = models.IntegerField(null=True, blank=True)
     rating = models.IntegerField(validators=[MaxValueValidator(5)])
@@ -150,7 +155,7 @@ class Review(models.Model):
                         business_type=self.business_type,
                         business_id=self.business_id
                     )
-                    
+
                     # Update review count and average rating
                     business.review_count = reviews.count()
                     if business.review_count > 0:
@@ -158,7 +163,7 @@ class Review(models.Model):
                         business.rating = round(avg_rating, 1)
                     else:
                         business.rating = 0
-                    
+
                     business.save()
                 except business_model.DoesNotExist:
                     pass  # Handle the case where business doesn't exist
@@ -342,6 +347,20 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+
+def create_vendor_profile(sender, instance, created, **kwargs):
+    if created and hasattr(instance, 'user_type') and instance.user_type == 'vendor':
+        Vendor.objects.create(user=instance)
+
+
+class UserChat(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_chats')
+    sent_to = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_chats')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.IntegerField(default=0)  # 0=unread, 1=read
+
 def create_retailer_profile(sender, instance, created, **kwargs):
     if created and hasattr(instance, 'user_type') and instance.user_type == 'retailer':
         Retailer.objects.create(user=instance)
+
