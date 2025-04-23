@@ -4,20 +4,12 @@ from django.contrib import messages
 from django.db.models import Avg, Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import ValidationError
-
-from .models import Restaurant, Hotel, Gym, Hospital, RetailStore, Review, Contact, Category, CustomUser, MenuItem, \
-    UserChat
-
-from .models import Restaurant, Hotel, Gym, Hospital, RetailStore, Review, Contact, Category, CustomUser, MenuItem, Retailer
-
+from .models import Restaurant, Hotel, Gym, Hospital, RetailStore, Review, Contact, Category, CustomUser, MenuItem, UserChat,Retailer
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from .forms import CustomLoginForm, CustomProfileEditForm, CustomUserCreationForm, ItemSearchForm, BusinessSearchForm
-
-
-
 
 @login_required
 def retailer(request):
