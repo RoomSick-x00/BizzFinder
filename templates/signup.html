@@ -47,7 +47,7 @@
       padding: 30px;
     }
 
-    .vendor-fields {
+    .retailer-fields {
       padding: 15px;
       background-color: #f8f9fa;
       border-radius: 4px;
@@ -109,7 +109,7 @@
                   <a class="nav-link {% if not request.GET.type or request.GET.type == 'user' %}active{% endif %}" href="{% url 'signup' %}?type=user">User Signup</a>
                 </li>
                 <li class="nav-item w-50">
-                  <a class="nav-link {% if request.GET.type == 'vendor' %}active{% endif %}" href="{% url 'signup' %}?type=vendor">Vendor Signup</a>
+                  <a class="nav-link {% if request.GET.type == 'retailer' %}active{% endif %}" href="{% url 'signup' %}?type=retailer">Retailer Signup</a>
                 </li>
               </ul>
             </div>
@@ -183,8 +183,8 @@
                   {% endif %}
                 </div>
 
-                {% if request.GET.type == 'vendor' %}
-                <div class="vendor-fields">
+                {% if request.GET.type == 'retailer' %}
+                <div class="retailer-fields">
                   <div class="mb-3">
                     <label for="business_name" class="form-label">Business Name</label>
                     <input type="text" class="form-control {% if form.business_name.errors %}is-invalid{% endif %}"

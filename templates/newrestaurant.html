@@ -444,7 +444,7 @@
 
                   {% if user.is_authenticated %}
                     <div class="review-button-wrapper">
-                      <a href="{% url 'add_review' restaurant.id %}" class="leave-review-button">Leave a Review</a>
+                      <a href="{% url 'add_review' business_type_param='restaurant' business_id=restaurant.id %}" class="leave-review-button">Leave a Review</a>
                     </div>
                   {% else %}
                     <p class="login-prompt">

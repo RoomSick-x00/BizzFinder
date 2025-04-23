@@ -9,3 +9,8 @@ def split(value, delimiter=','):
     Example: {{ value|split:"," }}
     """
     return value.split(delimiter) 
+
+@register.filter
+def get_item(dictionary, key):
+    """Gets an item from a dictionary using bracket notation"""
+    return dictionary.get(key)

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Restaurant, Review, MenuItem, CustomUser, Hotel, RetailStore, Gym, Hospital, Contact, Category
+from .models import Restaurant, Review, MenuItem, CustomUser, Hotel, RetailStore, Gym, Hospital, Contact, Category, Retailer
 
 # Register your models here.
 
@@ -13,3 +13,4 @@ admin.site.register(Gym)
 admin.site.register(Hospital)
 admin.site.register(Contact)
 admin.site.register(Category)
+admin.site.register(Retailer)
