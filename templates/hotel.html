@@ -1,4 +1,4 @@
-{%load static%}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hotel Reviews - BIZZFINDER</title>
  
-  <link rel="stylesheet" href = "{% static 'common.css' %}">
+  <link rel="stylesheet" href="{% static 'common.css' %}">
 
   <style>
     /* Override header styles to match common.css exactly */
@@ -264,6 +264,15 @@
     .login-link:hover {
       color: #c0392b;
     }
+    
+    /* Debug section */
+    .debug-info {
+      margin: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
   </style>
 </head>
 <body>
@@ -309,7 +318,16 @@
   <main>
     <div class="container mt-4">
       <h1>Hotels</h1>
-      
+{% comment %}       
+      <!-- Debug info - Remove in production -->
+      <div class="debug-info">
+        <h3>Debug Info:</h3>
+        <p>Number of hotels in context: {{ hotels|length }}</p>
+        {% for hotel in hotels %}
+          <p>Hotel found: {{ hotel.name }} (Status: {{ hotel.status }})</p>
+        {% endfor %}
+      </div>
+       {% endcomment %}
       <div class="reviews-grid">
         {% for hotel in hotels %}
         <div class="card">
@@ -335,10 +353,14 @@
                 <strong>Hover for Details</strong>
                 <div class="details">
                   <p><strong>Price Range:</strong> {{ hotel.price_range }}</p>
-                  <p><strong>Check-in:</strong> {{ hotel.check_in_time }}</p>
-                  <p><strong>Check-out:</strong> {{ hotel.check_out_time }}</p>
                   <p><strong>Address:</strong> {{ hotel.address }}</p>
+                  <p><strong>Phone:</strong> {{ hotel.phone }}</p>
+                  {% if hotel.website %}
+                  <p><strong>Website:</strong> {{ hotel.website }}</p>
+                  {% endif %}
+                  {% if hotel.amenities %}
                   <p><strong>Amenities:</strong> {{ hotel.amenities }}</p>
+                  {% endif %}
                 </div>
               </div>
             </div>
@@ -354,7 +376,7 @@
                 <div class="circle" id="bottom"></div>
               </div>
               <div class="front-content">
-                <small class="badge">{{ hotel.hotel_type }}</small>
+                <small class="badge">Hotel</small>
                 <div class="description">
                   <div class="title">
                     <p class="title">
@@ -368,11 +390,12 @@
                       </g>
                     </svg>
                   </div>
+                  <p class="description">{{ hotel.description|truncatechars:100 }}</p>
                   <p class="card-footer">
                     {% if hotel.rating %}
                       {{ hotel.rating }} ★ &nbsp; | &nbsp; {{ hotel.price_range }}
                     {% else %}
-                      No reviews yet &nbsp; | &nbsp; {{ hotel.price_range }}
+                      No ratings yet &nbsp; | &nbsp; {{ hotel.price_range }}
                     {% endif %}
                   </p>
                 </div>

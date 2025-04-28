@@ -85,7 +85,7 @@ WSGI_APPLICATION = 'BizzFinder.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'BizzFinder',
+        'NAME': 'Project',
         'USER': 'postgres',
         'PASSWORD': 'root',
         'HOST': 'localhost',

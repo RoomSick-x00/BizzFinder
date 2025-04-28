@@ -86,6 +86,8 @@ def retailer(request):
             'status': store.status,
             'model_type': 'retail'
         })
+        print(request.POST)
+
 
     return render(request, 'retailer/retailer.html', {
         'retailer': retailer,
@@ -201,7 +203,11 @@ def newrestaurant(request):
 
 def hotel(request):
     try:
-        hotels = Hotel.objects.annotate(avg_rating=Avg('review__rating')).order_by('-avg_rating')
+        hotelx = Hotel.objects.all()
+        print(f"Total hotels found: {hotelx.count()}")
+        for hotel in hotelx:
+            print(f"Hotel: {hotel.name}, Status: {hotel.status}")
+        hotels = Hotel.objects.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')
         paginator = Paginator(hotels, 12)
         page = request.GET.get('page')
         try:
@@ -229,6 +235,7 @@ def newgym(request):
             gyms = paginator.page(paginator.num_pages)
         return render(request, 'newgym.html', {'gyms': gyms})
     except Exception as e:
+        print(f"Error loading hotels: {e}")
         messages.error(request, 'Error loading gyms. Please try again.')
         return render(request, 'newgym.html', {'gyms': []})
 
@@ -296,74 +303,43 @@ def contactus(request):
 
     return render(request, 'contactus.html')
 
-
 @login_required
 def add_review(request, business_id=None, business_type_param=None):
-    # Use the business_type_param if provided
-    business_type = business_type_param
     business = None
+    business_type = business_type_param  # Use the provided type parameter
 
-    business_type = None
+    # First, try to find business using the provided type
+    if business_type:
+        business_models = {
+            'restaurant': Restaurant,
+            'hotel': Hotel,
+            'gym': Gym,
+            'hospital': Hospital,
+            'retail': RetailStore
+        }
+        model = business_models.get(business_type.lower())
+        if model:
+            try:
+                business = model.objects.get(id=business_id)
+            except model.DoesNotExist:
+                pass  # Fallback to checking all models
 
-    # Check each business type
-    if Restaurant.objects.filter(id=business_id).exists():
-        business = Restaurant.objects.get(id=business_id)
-        business_type = 'restaurant'
-    elif Hotel.objects.filter(id=business_id).exists():
-        business = Hotel.objects.get(id=business_id)
-        business_type = 'hotel'
-    elif Gym.objects.filter(id=business_id).exists():
-        business = Gym.objects.get(id=business_id)
-        business_type = 'gym'
-    elif Hospital.objects.filter(id=business_id).exists():
-        business = Hospital.objects.get(id=business_id)
-        business_type = 'hospital'
-    elif RetailStore.objects.filter(id=business_id).exists():
-        business = RetailStore.objects.get(id=business_id)
-        business_type = 'retail'
+    # If not found yet, check all business types sequentially
+    if not business:
+        for model in [Restaurant, Hotel, Gym, Hospital, RetailStore]:
+            try:
+                business = model.objects.get(id=business_id)
+                business_type = model.__name__.lower()
+                break
+            except model.DoesNotExist:
+                continue
 
+    # Validate business was found
     if not business or not business_type:
         messages.error(request, 'Business not found')
         return redirect('index')
 
-
-    
-    # Find the business based on type and ID
-    if business_type == 'restaurant':
-        business = get_object_or_404(Restaurant, id=business_id)
-    elif business_type == 'hotel':
-        business = get_object_or_404(Hotel, id=business_id)
-    elif business_type == 'gym':
-        business = get_object_or_404(Gym, id=business_id)
-    elif business_type == 'hospital':
-        business = get_object_or_404(Hospital, id=business_id)
-    elif business_type == 'retail':
-        business = get_object_or_404(RetailStore, id=business_id)
-    else:
-        # Fallback to your old method if type not specified
-        if Restaurant.objects.filter(id=business_id).exists():
-            business = Restaurant.objects.get(id=business_id)
-            business_type = 'restaurant'
-        elif Hotel.objects.filter(id=business_id).exists():
-            business = Hotel.objects.get(id=business_id)
-            business_type = 'hotel'
-        elif Gym.objects.filter(id=business_id).exists():
-            business = Gym.objects.get(id=business_id)
-            business_type = 'gym'
-        elif Hospital.objects.filter(id=business_id).exists():
-            business = Hospital.objects.get(id=business_id)
-            business_type = 'hospital'
-        elif RetailStore.objects.filter(id=business_id).exists():
-            business = RetailStore.objects.get(id=business_id)
-            business_type = 'retail'
-    
-    # If no valid business or type is found, return an error
-    if not business or not business_type:
-        messages.error(request, 'Business not found')
-        return redirect('index')
-    
-    # Handle POST request (submitting a review)
-
+    # Handle form submission
     if request.method == 'POST':
         try:
             rating = request.POST.get('rating')
@@ -373,43 +349,32 @@ def add_review(request, business_id=None, business_type_param=None):
             if not all([rating, comment]):
                 raise ValidationError('All fields are required')
 
-            try:
-                rating = int(rating)  # Convert rating to integer
-                if not 1 <= rating <= 5:
-                    raise ValidationError('Rating must be between 1 and 5')
-            except ValueError:
-                raise ValidationError('Invalid rating value')
+            rating = int(rating)
+            if not 1 <= rating <= 5:
+                raise ValidationError('Rating must be between 1 and 5')
 
-            # Create the review
+            # Create review
             Review.objects.create(
                 user=request.user,
                 business_type=business_type,
-                business_id=business_id,
+                business_id=business.id,  # Use the actual business ID
                 rating=rating,
                 comment=comment
             )
-
-
             messages.success(request, 'Review added successfully!')
-            return redirect(business_type)
+            return redirect(business_type)  # Redirect to business-type-specific view
 
-
-            
-            # Success message and redirect
-            messages.success(request, 'Review added successfully!')
-            return redirect(business_type)  # Redirect to the business-specific page
-            
-
+        except ValueError:
+            messages.error(request, 'Invalid rating value')
         except ValidationError as e:
-            messages.error(request, str(e))  # Display validation error
+            messages.error(request, str(e))
         except Exception as e:
-            print(f"Error in add_review: {str(e)}")  # Log unexpected errors
             messages.error(request, 'Error adding review. Please try again.')
 
-    # For GET requests or if there's an error in POST
+    # Prepare context for template
     context = {
         'business': business,
-        'business_id': business_id,
+        'business_id': business.id,
         'business_type': business_type
     }
     return render(request, 'add_review.html', context)

@@ -176,9 +176,9 @@
                 <a href="{% url 'categories' %}" class="nav-link text-light">Categories</a>
               </li>
 
-              <li>
+              {% comment %} <li>
                 <a href="{% url 'chat' %}" class="nav-link text-light">My Chats</a>
-              </li>
+              </li> {% endcomment %}
               {% if user.is_authenticated %}
                 <li class="profile-dropdown">
                   <a href="#" class="profile-trigger">

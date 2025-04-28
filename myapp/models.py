@@ -206,7 +206,7 @@ class Hotel(models.Model):
         blank=True
     )
     review = models.TextField(max_length=500, blank=True, null=True)
-    price_range = models.CharField(max_length=10, choices=Restaurant.PRICE_CHOICES, default='$$')
+    price_range = models.CharField(max_length=20, choices=Restaurant.PRICE_CHOICES, default='$$')
     address = models.CharField(max_length=200)
     phone = models.CharField(max_length=20)
     website = models.URLField(blank=True, null=True)
