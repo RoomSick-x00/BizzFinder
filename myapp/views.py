@@ -199,27 +199,72 @@ def newrestaurant(request):
             'is_authenticated': request.user.is_authenticated,
             'current_user': request.user.phone_number if request.user.is_authenticated else "Guest",
         })
-
-
-def hotel(request):
+        
+def hotel_view(request):
     try:
-        hotelx = Hotel.objects.all()
-        print(f"Total hotels found: {hotelx.count()}")
-        for hotel in hotelx:
-            print(f"Hotel: {hotel.name}, Status: {hotel.status}")
-        hotels = Hotel.objects.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')
+        # Change this to query Hotel objects instead of Restaurant objects
+        hotels = Hotel.objects.all().order_by('-created_at')  # Assuming you have a Hotel model
+        total_count = hotels.count()
+
+        for hotel in hotels:
+            reviews = Review.objects.filter(
+                business_type='hotel',
+                business_id=hotel.id
+            ).order_by('-rating', '-created_at')  
+
+            hotel.top_review = reviews.first()
+            hotel.least_review = reviews.order_by('rating', '-created_at').first()
+
         paginator = Paginator(hotels, 12)
-        page = request.GET.get('page')
+        page = request.GET.get('page', 1)
         try:
-            hotels = paginator.page(page)
+            # Change variable name to match template
+            paginated_hotels = paginator.page(page)
         except PageNotAnInteger:
-            hotels = paginator.page(1)
+            paginated_hotels = paginator.page(1)
         except EmptyPage:
-            hotels = paginator.page(paginator.num_pages)
-        return render(request, 'hotel.html', {'hotels': hotels})
+            paginated_hotels = paginator.page(paginator.num_pages)
+
+        context = {
+            # Change key to 'hotels' to match template
+            'hotels': paginated_hotels,
+            'total_count': total_count,
+            'is_authenticated': request.user.is_authenticated,
+            'current_user': request.user.phone_number if request.user.is_authenticated else "Guest",
+        }
+
+        return render(request, 'hotel.html', context)
     except Exception as e:
-        messages.error(request, 'Error loading hotels. Please try again.')
-        return render(request, 'hotel.html', {'hotels': []})
+        print(f"Error in Hotel view: {str(e)}")  
+        return render(request, 'hotel.html', {
+            # Change key to 'hotels' to match template
+            'hotels': [],
+            'total_count': 0,
+            'error': str(e),
+            'is_authenticated': request.user.is_authenticated,
+            'current_user': request.user.phone_number if request.user.is_authenticated else "Guest",
+        })
+
+
+# def hotel(request):
+#     try:
+#         hotelx = Hotel.objects.all()
+#         print(f"Total hotels found: {hotelx.count()}")
+#         for hotel in hotelx:
+#             print(f"Hotel: {hotel.name}, Status: {hotel.status}")
+#         hotels = Hotel.objects.annotate(avg_rating=Avg('reviews__rating')).order_by('-avg_rating')
+#         paginator = Paginator(hotels, 12)
+#         page = request.GET.get('page')
+#         try:
+#             hotels = paginator.page(page)
+#         except PageNotAnInteger:
+#             hotels = paginator.page(1)
+#         except EmptyPage:
+#             hotels = paginator.page(paginator.num_pages)
+#         return render(request, 'hotel.html', {'hotels': hotels})
+#     except Exception as e:
+#         messages.error(request, 'Error loading hotels. Please try again.')
+#         return render(request, 'hotel.html', {'hotels': []})
 
 
 def newgym(request):

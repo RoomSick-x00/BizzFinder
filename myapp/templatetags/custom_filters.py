@@ -14,3 +14,10 @@ def split(value, delimiter=','):
 def get_item(dictionary, key):
     """Gets an item from a dictionary using bracket notation"""
     return dictionary.get(key)
+
+@register.filter(name='trim')
+def trim(value):
+    """Trims leading and trailing whitespace from a string."""
+    if isinstance(value, str):
+        return value.strip()
+    return value
