@@ -1,125 +1,30 @@
-{% load static %}
+{% extends "base.html" %}
+{% load static custom_filters %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Retail Store Reviews - BIZZFINDER</title>
-  <link rel="stylesheet" href="{% static 'common.css' %}">
+{% block title %}Retail Store Reviews - BIZZFINDER{% endblock %}
+
+{% block extra_css %}
   <style>
-    header {
-      box-sizing: border-box;
-      padding: 0.5rem 2rem;
-      height: 56px;
+    .footer {
       width: 100%;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: var(--primary-color);
+      max-width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    /* Retail Page-Specific Styles */
+    .store-badge {
+      background: rgba(255, 165, 0, 0.2);
+      color: orange;
+      padding: 5px 15px;
+      border-radius: 20px;
+      margin: 10px 0;
+      display: inline-block;
     }
 
-    body {
-      overflow-x: hidden;
-    }
-
-    .nav {
-      display: flex;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      gap: 1.5rem;
-      align-items: center;
-      min-width: 400px;
-      justify-content: flex-end;
-      height: 100%;
-    }
-
-    .nav-link {
-      color: var(--text-light);
-      text-decoration: none;
-      padding: 0.3rem 0.8rem;
-      border-radius: 4px;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-    }
-
-    .reviews-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 32px;
-      padding: 40px 20px;
-      margin-top: 20px;
-    }
-
-    .card {
-      padding: 24px;
-      border-radius: 12px;
-      overflow: visible;
-      min-height: 400px;
-      min-width: 220px;
-      height: auto;
-      perspective: 1000px;
-    }  
-
-    .content {
-      width: 100%;
-      height: 600px;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.6s;
-      transform-origin: center center;
-    }
-
-    .card:hover .content {
-      transform: rotateY(180deg);
-    }
-
-    .front, .back {
-      backface-visibility: hidden;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 1rem;
-    }
-
-    .front {
-      background: #fff;
-      z-index: 2;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .back {
-      background: #2c3e50;
-      color: #ecf0f1;
-      transform: rotateY(180deg);
-      transform-origin: center center;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    .back-content {
-      text-align: center;
-    }
-
-    .back-description {
-      font-size: 0.9rem;
-      margin: 0.5rem 0 1rem;
+    .store-details p {
+      margin: 0.5rem 0;
       color: #bdc3c7;
-      line-height: 1.4;
-    }
-
-    .img {
-      max-height: 200px;
-      position: relative;
-      width: 100%;
+      font-size: 0.9rem;
     }
 
     .store-image {
@@ -134,187 +39,117 @@
       transform: scale(1.05);
     }
 
-    .front-content {
-      text-align: center;
-    }
-
-    .title {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.3rem;
-      font-size: 1.1rem;
-    }
-
-    .rating {
-      color: #ffd700;
-      margin: 10px 0;
-    }
-
-    .store-badge {
-      background: rgba(255, 165, 0, 0.2);
-      color: orange;
-      padding: 5px 15px;
-      border-radius: 20px;
-      margin: 10px 0;
-      display: inline-block;
-    }
-
-    .leave-review-button {
-      background: #e74c3c;
-      color: #fff;
-      padding: 8px 16px;
-      border-radius: 4px;
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 15px;
-      transition: background 0.3s ease;
-    }
-
-    .leave-review-button:hover {
-      background: #c0392b;
-    }
-
-    .login-prompt {
-      color: #bdc3c7;
-      margin-top: 15px;
-    }
-
-    .login-link {
-      color: #e74c3c;
-      text-decoration: none;
-      font-weight: bold;
-      transition: color 0.3s ease;
-    }
-
-    .login-link:hover {
-      color: #c0392b;
-    }
-
-    @media screen and (max-width: 768px) {
-      .reviews-grid {
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-      }
-    
-      .card {
-        flex: 80%;
-        scroll-snap-align: center;
-      }
+    /* Override .card-footer or customize if needed */
+    .card-footer {
+      color: #888;
     }
   </style>
-</head>
-<body>
-  <header>
-    <div class="logo">
-      <a href="{% url 'index' %}" style="text-decoration: none; color: var(--text-light);">
-        Bizz<span class="highlight">Finderz</span>
-      </a>
-    </div>
-    <nav>
-      <ul class="nav">
-        <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
-        <li><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
-        <li><a href="{% url 'restaurant' %}" class="nav-link">Restaurants</a></li>
-        <li><a href="{% url 'hotel' %}" class="nav-link">Hotels</a></li>
-        <li><a href="{% url 'hospital' %}" class="nav-link">Hospitals</a></li>
-        <li><a href="{% url 'gym' %}" class="nav-link">Gyms</a></li>
-        <li><a href="{% url 'retail' %}" class="nav-link">Retail</a></li>
-        {% if user.is_authenticated %}
-          <li class="profile-dropdown">
-            <a href="#" class="profile-trigger">
-              {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="nav-profile-pic">
-              {% endif %}
-              {{ user.username }}
-            </a>
-            <div class="dropdown-content">
-              <a href="{% url 'profile' %}">Profile</a>
-              <a href="{% url 'edit_profile' %}">Edit Profile</a>
-              <hr class="divider">
-              <a href="{% url 'logout' %}">Logout</a>
-            </div>
-          </li>
-        {% else %}
-          <li><a href="{% url 'signup' %}" class="nav-link">Sign Up/Login</a></li>
-        {% endif %}
-        <li><a href="{% url 'contactus' %}" class="nav-link">Contact Us</a></li>
-      </ul>
-    </nav>
-  </header>
+{% endblock %}
 
-  <main>
-    <div class="container mt-4">
-      <h1>Retail Store Ratings & Reviews</h1>
-      
-      <div class="reviews-grid">
-        {% for store in stores %}
-        <div class="card">
-          <div class="content">
-            <div class="front">
-              <div class="img">
-                {% if store.image %}
-                  <img src="{{ store.image.url }}" alt="{{ store.name }}" class="store-image">
-                {% else %}
-                  <img src="{% static 'pictures/retail store.jpg' %}" alt="{{ store.name }}" class="store-image">
-                {% endif %}
-              </div>
-              <div class="front-content">
-                <div class="title">
-                  <p class="title"><strong>{{ store.name }}</strong></p>
+{% block navbar %}
+<li class="nav-item"><a href="{% url 'categories' %}" class="nav-link">Categories</a></li>
+<li class="nav-item"><a href="{% url 'restaurant' %}" class="nav-link">Restaurants</a></li>
+<li class="nav-item"><a href="{% url 'hotel' %}" class="nav-link">Hotels</a></li>
+<li class="nav-item"><a href="{% url 'hospital' %}" class="nav-link">Hospitals</a></li>
+<li class="nav-item"><a href="{% url 'gym' %}" class="nav-link">Gyms</a></li>
+<li class="nav-item"><a href="{% url 'retail' %}" class="nav-link active">Retail</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1>Retail Store Ratings & Reviews</h1>
+
+  <div class="reviews-grid">
+    {% for store in stores %}
+    <div class="card">
+      <div class="content">
+        <!-- FRONT SIDE OF CARD -->
+        <div class="front">
+          <div class="img">
+            {% if store.image %}
+              <img src="{{ store.image.url }}" alt="{{ store.name }}" class="store-image">
+            {% else %}
+              <img src="{% static 'pictures/retail store.jpg' %}" alt="{{ store.name }}" class="store-image">
+            {% endif %}
+          </div>
+          <div class="front-content">
+            <small class="badge">Retail</small>
+            <div class="description">
+              <div class="title">
+                <p class="title"><strong>{{ store.name }}</strong></p>
+                {% if store.store_type %}
                   <div class="store-badge">{{ store.store_type }}</div>
-                </div>
-                <div class="rating">
-                  {% if store.rating %}
-                    {% for i in "12345"|make_list %}
-                      {% if forloop.counter <= store.rating %}
-                        ★
-                      {% else %}
-                        ☆
-                      {% endif %}
-                    {% endfor %}
-                    ({{ store.review_count }} reviews)
-                  {% else %}
-                    <span>No reviews yet</span>
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-            <div class="back">
-              <div class="back-content">
-                {% if user.is_authenticated %}
-                  <div class="review-button-wrapper">
-                    <a href="{% url 'add_review' business_type_param='retail' business_id=store.id %}" class="leave-review-button">Leave a Review</a>
-                  </div>
-                {% else %}
-                  <p class="login-prompt">
-                    <a href="{% url 'signup' %}" class="login-link">Log in</a> to leave a review.
-                  </p>
                 {% endif %}
-                <h4>{{ store.name }}</h4>
-                <p class="back-description">{{ store.description|default:"" }}</p>
-                <div class="store-info">
-                  <p>Hours: {{ store.operating_hours }}</p>
-                  <p>Payment: {{ store.payment_methods }}</p>
-                  <p>Address: {{ store.address }}</p>
-                  {% if store.special_offers %}
-                    <p>Special Offers: {{ store.special_offers }}</p>
-                  {% endif %}
-                </div>
               </div>
+              <div class="rating">
+                {% if store.rating %}
+                  {% for i in "12345"|make_list %}
+                    {% if forloop.counter <= store.rating %}
+                      ★
+                    {% else %}
+                      ☆
+                    {% endif %}
+                  {% endfor %}
+                  ({{ store.review_count }} reviews)
+                {% else %}
+                  <span>No reviews yet</span>
+                {% endif %}
+              </div>
+              <p class="card-footer">
+                {{ store.operating_hours }} | {{ store.address|truncatechars:40 }}
+              </p>
             </div>
           </div>
         </div>
-        {% empty %}
-        <p class="no-stores">No retail stores available at the moment.</p>
-        {% endfor %}
+
+        <!-- BACK SIDE OF CARD -->
+        <div class="back">
+          <div class="back-content">
+            {% if user.is_authenticated %}
+              <div class="review-button-wrapper">
+                <a href="{% url 'add_review' business_type_param='retail' business_id=store.id %}" class="leave-review-button">Leave a Review</a>
+              </div>
+            {% else %}
+              <p class="login-prompt">
+                <a href="{% url 'signup' %}" class="login-link">Log in</a> to leave a review.
+              </p>
+            {% endif %}
+            <strong class="restaurant-name">{{ store.name }}</strong>
+            <p class="back-description">
+              {{ store.description|default:"No description available."|truncatechars:120 }}
+            </p>
+            <div class="store-info">
+              <p><strong>Hours:</strong> {{ store.operating_hours }}</p>
+              <p><strong>Payment:</strong> {{ store.payment_methods }}</p>
+              <p><strong>Address:</strong> {{ store.address }}</p>
+              {% if store.special_offers %}
+                <p><strong>Special Offers:</strong> {{ store.special_offers }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </main>
+    {% empty %}
+    <p class="no-stores">No retail stores available at the moment.</p>
+    {% endfor %}
+  </div>
 
-  <footer class="footer mt-5 py-3 bg-light text-center">
-    <p>&copy; 2025 BIZZFINDER. All rights reserved.</p>
-  </footer>
-</body>
-</html>
+  {% if stores.has_other_pages %}
+  <div class="pagination">
+    {% if stores.has_previous %}
+      <a href="?page={{ stores.previous_page_number }}" class="pagination-link">&laquo; Previous</a>
+    {% endif %}
+    {% for num in stores.paginator.page_range %}
+      {% if stores.number == num %}
+        <span class="pagination-current">{{ num }}</span>
+      {% else %}
+        <a href="?page={{ num }}" class="pagination-link">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if stores.has_next %}
+      <a href="?page={{ stores.next_page_number }}" class="pagination-link">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+{% endblock %}
