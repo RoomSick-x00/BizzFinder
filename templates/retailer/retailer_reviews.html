@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>All Reviews on Your Businesses</h2>
+    {% if reviews %}
+        <div class="list-group mt-4">
+            {% for entry in reviews %}
+                <div class="list-group-item mb-3">
+                    <h5>{{ entry.business_type }}: {{ entry.business.name }}</h5>
+                    <p><strong>Rating:</strong> {{ entry.review.rating }} ⭐</p>
+                    <p><strong>Comment:</strong> {{ entry.review.comment }}</p>
+                    <p><strong>By:</strong> {{ entry.review.user.username }} | <strong>Date:</strong> {{ entry.review.created_at|date:'d M Y, H:i' }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-4">No reviews found for your businesses yet.</div>
+    {% endif %}
+    <a href="{% url 'retailer' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %} 

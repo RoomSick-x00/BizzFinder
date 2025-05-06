@@ -745,6 +745,8 @@ def add_business(request):
         location = request.POST.get('location')
         contact = request.POST.get('contact')
         description = request.POST.get('description')
+        items = request.POST.get('items', '')
+        special_items = request.POST.get('special_items', '')
 
         if category == 'restaurant':
             cuisine_type = request.POST.get('cuisine_type')
@@ -758,7 +760,9 @@ def add_business(request):
                 cuisine_type=cuisine_type,
                 price_range=price_range,
                 opening_hours=opening_hours,
-                retailer=retailer
+                retailer=retailer,
+                items=items,
+                special_items=special_items
             )
             
         elif category == 'hotel':
@@ -771,7 +775,9 @@ def add_business(request):
                 description=description,
                 amenities=amenities,
                 price_range=price_range,
-                retailer=retailer
+                retailer=retailer,
+                items=items,
+                special_items=special_items
             )   
             
         elif category == 'gym':
@@ -784,7 +790,9 @@ def add_business(request):
                 description=description,
                 facilities=facilities,
                 opening_hours=opening_hours,
-                retailer=retailer
+                retailer=retailer,
+                items=items,
+                special_items=special_items
             )
             
         elif category == 'retail':
@@ -797,7 +805,9 @@ def add_business(request):
                 description=description,
                 store_type=store_type,
                 operating_hours=operating_hours,
-                retailer=retailer
+                retailer=retailer,
+                items=items,
+                special_items=special_items
             )
             
         elif category == 'hospital':
@@ -810,10 +820,12 @@ def add_business(request):
                 description=description,
                 specialties=specialties,
                 emergency_services=emergency_services,
-                retailer=retailer
+                retailer=retailer,
+                items=items,
+                special_items=special_items
             )
         messages.success(request, f"{category.capitalize()} added successfully!")
-        return redirect('retailer')  # Redirect to the retailer dashboard
+        return redirect('retailer')
 
     return render(request, 'retailer/retailer.html')
 
@@ -885,36 +897,97 @@ def item_search(request):
             'total_results': 0
         })
     
-    # Base query for finding items containing the search term
-    item_filter = Q(name__icontains=item_name)
-    
-    # Location filter to apply to businesses if location is provided
-    location_filter = Q(restaurant__address__icontains=location) if location else Q()
-    
-    # Search for menu items in restaurants
-    menu_items = MenuItem.objects.filter(item_filter)
-    
-    # Apply location filter if provided
-    if location:
-        menu_items = menu_items.filter(restaurant__address__icontains=location)
-    
-    # Group results by business
     results = []
     
-    # Group menu items by restaurant
-    restaurants_with_items = {}
-    for item in menu_items:
-        if item.restaurant not in restaurants_with_items:
-            restaurants_with_items[item.restaurant] = []
-        restaurants_with_items[item.restaurant].append(item)
+    # Search in restaurants
+    restaurants = Restaurant.objects.filter(
+        Q(items__icontains=item_name) | Q(special_items__icontains=item_name)
+    )
+    if location:
+        restaurants = restaurants.filter(address__icontains=location)
     
-    # Format results
-    for restaurant, items in restaurants_with_items.items():
-        results.append({
-            'business': restaurant,
-            'business_type': 'restaurant',
-            'items': items
-        })
+    for restaurant in restaurants:
+        items_list = [item.strip() for item in restaurant.items.split(',') if item_name.lower() in item.lower()]
+        special_items_list = [item.strip() for item in restaurant.special_items.split(',') if item_name.lower() in item.lower()]
+        if items_list or special_items_list:
+            results.append({
+                'business': restaurant,
+                'business_type': 'restaurant',
+                'items': items_list,
+                'special_items': special_items_list
+            })
+    
+    # Search in hotels
+    hotels = Hotel.objects.filter(
+        Q(items__icontains=item_name) | Q(special_items__icontains=item_name)
+    )
+    if location:
+        hotels = hotels.filter(address__icontains=location)
+    
+    for hotel in hotels:
+        items_list = [item.strip() for item in hotel.items.split(',') if item_name.lower() in item.lower()]
+        special_items_list = [item.strip() for item in hotel.special_items.split(',') if item_name.lower() in item.lower()]
+        if items_list or special_items_list:
+            results.append({
+                'business': hotel,
+                'business_type': 'hotel',
+                'items': items_list,
+                'special_items': special_items_list
+            })
+    
+    # Search in gyms
+    gyms = Gym.objects.filter(
+        Q(items__icontains=item_name) | Q(special_items__icontains=item_name)
+    )
+    if location:
+        gyms = gyms.filter(address__icontains=location)
+    
+    for gym in gyms:
+        items_list = [item.strip() for item in gym.items.split(',') if item_name.lower() in item.lower()]
+        special_items_list = [item.strip() for item in gym.special_items.split(',') if item_name.lower() in item.lower()]
+        if items_list or special_items_list:
+            results.append({
+                'business': gym,
+                'business_type': 'gym',
+                'items': items_list,
+                'special_items': special_items_list
+            })
+    
+    # Search in hospitals
+    hospitals = Hospital.objects.filter(
+        Q(items__icontains=item_name) | Q(special_items__icontains=item_name)
+    )
+    if location:
+        hospitals = hospitals.filter(address__icontains=location)
+    
+    for hospital in hospitals:
+        items_list = [item.strip() for item in hospital.items.split(',') if item_name.lower() in item.lower()]
+        special_items_list = [item.strip() for item in hospital.special_items.split(',') if item_name.lower() in item.lower()]
+        if items_list or special_items_list:
+            results.append({
+                'business': hospital,
+                'business_type': 'hospital',
+                'items': items_list,
+                'special_items': special_items_list
+            })
+    
+    # Search in retail stores
+    retail_stores = RetailStore.objects.filter(
+        Q(items__icontains=item_name) | Q(special_items__icontains=item_name)
+    )
+    if location:
+        retail_stores = retail_stores.filter(address__icontains=location)
+    
+    for store in retail_stores:
+        items_list = [item.strip() for item in store.items.split(',') if item_name.lower() in item.lower()]
+        special_items_list = [item.strip() for item in store.special_items.split(',') if item_name.lower() in item.lower()]
+        if items_list or special_items_list:
+            results.append({
+                'business': store,
+                'business_type': 'retail',
+                'items': items_list,
+                'special_items': special_items_list
+            })
     
     context = {
         'item_name': item_name,
@@ -952,6 +1025,8 @@ def edit_business(request, business_type, business_id):
         business.name = request.POST.get('name')
         business.address = request.POST.get('location')
         business.phone = request.POST.get('contact') if business_type != 'retail' else business.phone
+        business.items = request.POST.get('items', '')
+        business.special_items = request.POST.get('special_items', '')
         
         if hasattr(business, 'description'):
             business.description = request.POST.get('description')
@@ -1047,4 +1122,57 @@ def retailer_debug(request):
 
 def interaction():
     pass
+
+@login_required
+def retailer_reviews(request):
+    retailer = request.user.retailer
+    # सभी बिज़नेस निकालें
+    restaurants = Restaurant.objects.filter(retailer=retailer)
+    hotels = Hotel.objects.filter(retailer=retailer)
+    gyms = Gym.objects.filter(retailer=retailer)
+    hospitals = Hospital.objects.filter(retailer=retailer)
+    retail_stores = RetailStore.objects.filter(retailer=retailer)
+
+    # सभी रिव्यूज़ निकालें
+    reviews = []
+    for restaurant in restaurants:
+        for review in Review.objects.filter(business_type='restaurant', business_id=restaurant.id):
+            reviews.append({
+                'business': restaurant,
+                'business_type': 'Restaurant',
+                'review': review
+            })
+    for hotel in hotels:
+        for review in Review.objects.filter(business_type='hotel', business_id=hotel.id):
+            reviews.append({
+                'business': hotel,
+                'business_type': 'Hotel',
+                'review': review
+            })
+    for gym in gyms:
+        for review in Review.objects.filter(business_type='gym', business_id=gym.id):
+            reviews.append({
+                'business': gym,
+                'business_type': 'Gym',
+                'review': review
+            })
+    for hospital in hospitals:
+        for review in Review.objects.filter(business_type='hospital', business_id=hospital.id):
+            reviews.append({
+                'business': hospital,
+                'business_type': 'Hospital',
+                'review': review
+            })
+    for store in retail_stores:
+        for review in Review.objects.filter(business_type='retail', business_id=store.id):
+            reviews.append({
+                'business': store,
+                'business_type': 'Retail Store',
+                'review': review
+            })
+
+    # लेटेस्ट रिव्यू सबसे ऊपर
+    reviews = sorted(reviews, key=lambda x: x['review'].created_at, reverse=True)
+
+    return render(request, 'retailer/retailer_reviews.html', {'reviews': reviews})
 

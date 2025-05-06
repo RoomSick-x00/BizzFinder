@@ -21,6 +21,8 @@
       z-index: 1000;
       width: 400px;
       max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .popup-form h2 {
       margin-bottom: 15px;
@@ -87,7 +89,7 @@
       <h1>A better way to talk with your customers</h1>
       <p>Manage all your customer conversations in one powerful platform that feels just like your inbox.</p>
       <div class="hero-buttons">
-        <a href="#" class="btn primary">Reviews</a>
+        <a href="{% url 'retailer_reviews' %}" class="btn primary">Reviews</a>
       </div>
       <div class="trust-badges">
         {% comment %} <img src="{% static 'images/default-profile.png' %}" alt="Business Name" /> {% endcomment %}
@@ -181,6 +183,8 @@
       <input type="text" name="location" placeholder="Location" required />
       <input type="number" name="contact" placeholder="Contact number" required />
       <textarea name="description" placeholder="Description" rows="4"></textarea>
+      <textarea name="items" placeholder="Items (comma-separated)" rows="3"></textarea>
+      <textarea name="special_items" placeholder="Special Items (comma-separated)" rows="3"></textarea>
       <div id="dynamic-fields"></div>
       <button type="submit">Add Business</button>
       <button type="button" class="cancel" id="closeFormBtn">Cancel</button>
@@ -198,6 +202,8 @@
       <input type="text" name="location" id="edit_location" placeholder="Location" required />
       <input type="number" name="contact" id="edit_contact" placeholder="Contact number" required />
       <textarea name="description" id="edit_description" placeholder="Description" rows="4"></textarea>
+      <textarea name="items" id="edit_items" placeholder="Items (comma-separated)" rows="3"></textarea>
+      <textarea name="special_items" id="edit_special_items" placeholder="Special Items (comma-separated)" rows="3"></textarea>
       <div id="edit_dynamic_fields"></div>
       <button type="submit">Update Business</button>
       <button type="button" class="cancel" id="closeEditFormBtn">Cancel</button>

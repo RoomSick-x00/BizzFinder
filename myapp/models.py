@@ -91,6 +91,8 @@ class Restaurant(models.Model):
         ('inactive', 'Inactive')
     ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='restaurants', null=True, blank=True)
+    items = models.TextField(blank=True, help_text="List of items offered (comma-separated)")
+    special_items = models.TextField(blank=True, help_text="List of special items (comma-separated)")
 
     def __str__(self):
         return self.name
@@ -218,6 +220,8 @@ class Hotel(models.Model):
         ('inactive', 'Inactive')
     ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='hotels', null=True, blank=True)
+    items = models.TextField(blank=True, help_text="List of items offered (comma-separated)")
+    special_items = models.TextField(blank=True, help_text="List of special items (comma-separated)")
 
     def __str__(self):
         return self.name
@@ -252,6 +256,8 @@ class RetailStore(models.Model):
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='retail_stores', null=True, blank=True)
     phone = models.CharField(max_length=15, blank=True, null=True, help_text="Contact number of the store")
     description = models.TextField(blank=True, help_text="Detailed description of the store")
+    items = models.TextField(blank=True, help_text="List of items offered (comma-separated)")
+    special_items = models.TextField(blank=True, help_text="List of special items (comma-separated)")
 
     def __str__(self):
         return self.name
@@ -288,6 +294,8 @@ class Gym(models.Model):
         ('inactive', 'Inactive')
     ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='gyms', null=True, blank=True)
+    items = models.TextField(blank=True, help_text="List of items offered (comma-separated)")
+    special_items = models.TextField(blank=True, help_text="List of special items (comma-separated)")
 
     def __str__(self):
         return self.name
@@ -319,6 +327,8 @@ class Hospital(models.Model):
         ('inactive', 'Inactive')
     ])
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='hospitals', null=True, blank=True)
+    items = models.TextField(blank=True, help_text="List of items offered (comma-separated)")
+    special_items = models.TextField(blank=True, help_text="List of special items (comma-separated)")
 
     def __str__(self):
         return self.name
